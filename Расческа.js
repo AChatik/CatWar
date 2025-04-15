@@ -16,8 +16,11 @@
 // @copyright 2025, PIPos (https://github.com/AChatik)
 
 
-
 // ==/UserScript==
+
+// ==/OpenUserJS==
+// @author PIPos
+// ==/OpenUserJS==
 
 (function() { 'use strict'; })(); //это че ваще
 
