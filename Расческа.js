@@ -14,12 +14,24 @@
 // @supportURL https://catwar.net/cat1646323
 // @homepageURL https://github.com/AChatik/CatWar
 // @copyright 2025, PIPos (https://github.com/AChatik)
-
-
 // ==/UserScript==
 
 // ==/OpenUserJS==
-// @author PIPos
+// @name         Расческа
+// @namespace    http://tampermonkey.net/
+// @version      1.0.0
+// @description  Делает взаимодействие с сайто мприятнее
+// @author       PIPos
+// @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/main/Расческа.js
+// @downloadURL  https://raw.githubusercontent.com/AChatik/CatWar/main/Расческа.js
+// @match        https://catwar.net/cw3/
+// @icon         https://catwar.net/cw3/things/3611.png
+// @grant        none
+// @license      MIT
+// @contributionURL https://catwar.net/cat1646323
+// @supportURL https://catwar.net/cat1646323
+// @homepageURL https://github.com/AChatik/CatWar
+// @copyright 2025, PIPos (https://github.com/AChatik)
 // ==/OpenUserJS==
 
 (function() { 'use strict'; })(); //это че ваще
