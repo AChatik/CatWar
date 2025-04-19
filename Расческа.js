@@ -263,10 +263,6 @@
     opacity: 100%;
   }
 
-  #branch {
-    position: relative;
-  }
-
   #catNotes {
     
     position: absolute;
@@ -558,7 +554,8 @@
   // =====================================================================================================================================================================
 
   function injectSettings() {
-    document.querySelector("#branch").innerHTML += settingsHTML;
+    //document.querySelector("#branch").innerHTML += settingsHTML;
+    document.querySelector("#branch").insertAdjacentHTML("beforeend", settingsHTML)
 
     //эвенты изменения для сохранения настроек. Какой то костыль ебаный а лан пох хули мне епта бля
     let HideClickerCheckBox = document.querySelector("#RascheskaSettings_HideClicker");
@@ -651,7 +648,7 @@
 
   function injectNotes() {
     let place = document.querySelector("#branch");
-
+    place.style.position = "relative";
     let catID = document.querySelector("#branch").querySelector("p").attributes.getNamedItem("data-cat").value;
     settings['SavedCatsNames'][catID] = place.querySelector("p").querySelector("big").innerHTML;
     saveSettings();
