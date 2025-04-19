@@ -304,6 +304,12 @@
     border-style:ridge;
     color:rgb(58, 53, 53);
   }
+  .RascheskaSettings_Textarea {
+    background-color: #00000000; 
+    color:rgb(200,200,200); 
+    height: 200px; 
+    width: 500px;
+  }
 
   `;
   var settingsHTML = `
@@ -354,8 +360,27 @@
       </div>
     </td>
     </tr>
+    <tr>
+    <td>
+      Импорт/экспорт настроек и заметок
+      <br>
+      <span class="settingDescription" style="padding:20px">
+        <textarea id="RascheskaSettings_importSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Вставьте настройки сюда."></textarea>
+        <br>
+        <button id="RascheskaSettings_importSettingsSubmitBtn" class="RascheskaSettings_Btn">Импортировать</button>
+        <br>
+        Экспорт. Копируйте текст из поля ниже
+        <br>
+        <textarea id="RascheskaSettings_exportSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Ваши настройки"></textarea>
+        <br>
+      </span>
+      
+      </div>
+    </td>
+    </tr>
   </div>
   `;
+
 
   var clickerHTML = `
   <div id="clicker">
@@ -567,6 +592,15 @@
       saveSettings();
     });
 
+    document.querySelector("#RascheskaSettings_importSettingsSubmitBtn").addEventListener("click", () => {
+      const loadedSettings = JSON.parse(document.querySelector("#RascheskaSettings_importSettingsTextArea").value);
+      settings = { ...settings, ...loadedSettings };
+      saveSettings();
+    });
+    document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
+    
+  
+
     let notes = document.querySelector("#RascheskaSettings_NotesList"); 
     notes.innerHTML += `<table class="RascheskaSettings_Note settingDescription"></table>`
     let table = notes.querySelector("table");
@@ -580,7 +614,7 @@
             </a>
           </td>
           <td style="position: relative; padding-bottom:65px;">
-            <textarea cat-id="${ID}" id="RascheskaSettings_NoteTextarea_${ID}" style="background-color: #00000000; color:rgb(200,200,200); height: 200px; width: 500px;">${note}</textarea>
+            <textarea cat-id="${ID}" class="RascheskaSettings_Textarea">${note}</textarea>
             <br>
             <button class="RascheskaSettings_Btn" id="RascheskaSettings_DeleteNoteBtn_${ID}" cat-id="${ID}" style="position: absolute; width:100%; height:50px;">
               Удалить
