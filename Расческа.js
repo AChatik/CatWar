@@ -33,12 +33,16 @@
     ClickerMaxMoves: -1,
     injectLinksDelay: 2,
     MyCatsNotes: {
-      "1646323": "я написал это дерьмо."
+      "1646323": "я написал это дерьмо.",
+      "1630560": "Знаком ли ты с одним из своих рёбер?",
+      "1615741": `<img src="https://images.cooltext.com/5728765.gif" width="507" height="92" alt="INSANE BOSS" />`,
     },
+    HideSecretNotesIDs: ["1646323", "1630560", "1615741"],
     SavedCatsNames: {
-      
     },
   };
+
+  var default_settings = { ...settings, ...{}};
 
   var injectedLinks = [];
 
@@ -251,7 +255,8 @@
 
   #catNotesForLink_noteText {
     color: rgb(201, 201, 201);
-
+    font-size:14.4pt !important;
+    font-family Verdana !important;
   } 
 
   a #catNotesForLink {
@@ -369,11 +374,22 @@
         <br>
         <textarea id="RascheskaSettings_exportSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Ваши настройки"></textarea>
         <br>
+        <button id="RascheskaSettings_setDefaultSettings" class="RascheskaSettings_Btn">Сбросить настройки</button>
+        <br>
       </span>
       
       </div>
     </td>
     </tr>
+    </table>
+    <span class="settingDescription">  
+      <h3 align="center">Эээм нуу ээ даа...</h3>
+      <a href="https://catwar.net/cat1646323">PIPos</a>
+      <br>
+      <a href="https://catwar.net/cat1630560">Tecdrej</a>
+      <br>
+      <a href="https://catwar.net/cat1615741">Güliedistodiez</a>
+    </span>
   </div>
   `;
 
@@ -595,7 +611,12 @@
       saveSettings();
     });
     document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
-    
+    document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
+    document.querySelector("#RascheskaSettings_setDefaultSettings").addEventListener("click", ()=>{
+      console.log("Настройки сброшены!");
+      settings = default_settings;
+      saveSettings();
+    });
   
 
     let notes = document.querySelector("#RascheskaSettings_NotesList"); 
@@ -603,6 +624,9 @@
     let table = notes.querySelector("table");
     table.style.padding = "20px";
     for (var [ID, note] of Object.entries(settings['MyCatsNotes'])) {
+      if (settings['HideSecretNotesIDs'].includes(ID)) {
+        continue;
+      }
       table.innerHTML += `
         <tr style="margin-top: 10px;">
           <td style="font-size: 20pt; vertical-align: top; width: 150px">
@@ -644,6 +668,9 @@
       });
       console.log("Отображена заметка "+ID);
     });
+    if (table.innerHTML == "") {
+      table.innerHTML = "Вы можете добавить заметку в профиле игрока."
+    }
   }
 
   function injectNotes() {
