@@ -24,7 +24,7 @@
   var settings = {
     SmoothEverything: true,
     SmoothTime: 0.2,
-    ClickerRandomDelay: 8,
+    ClickerRandomDelay: 25,
     ClickerActualDelay: 150,
     EnableClicker: false,
     ClickerTargetCellNumX: 0,
