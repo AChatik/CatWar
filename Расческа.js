@@ -243,7 +243,7 @@
     padding:2px;
   }
   #catNotesForLink {
-  z-index: 228;
+    z-index: 228;
     position: absolute;
     padding:10px;
     border-radius: 10px;
@@ -251,11 +251,12 @@
     color:white;
     opacity: 0%;
     pointer-events: none;
+    
   }
 
   #catNotesForLink_noteText {
     color: rgb(201, 201, 201);
-    font-size:14.4pt !important;
+    font-size:14px !important;
     font-family Verdana !important;
   } 
 
