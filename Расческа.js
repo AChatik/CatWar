@@ -384,11 +384,11 @@
     </table>
     <span class="settingDescription">  
       <h3 align="center">Эээм нуу ээ даа...</h3>
-      <a href="https://catwar.net/cat1646323">PIPos</a>
+      <a href="https://catwar.net/cat1646323" style="color:rgb(219, 197, 197);">PIPos</a>
       <br>
-      <a href="https://catwar.net/cat1630560">Tecdrej</a>
+      <a href="https://catwar.net/cat1630560" style="color:rgb(219, 197, 197);">Tecdrej</a>
       <br>
-      <a href="https://catwar.net/cat1615741">Güliedistodiez</a>
+      <a href="https://catwar.net/cat1615741" style="color:rgb(219, 197, 197);">Güliedistodiez</a>
     </span>
   </div>
   `;
