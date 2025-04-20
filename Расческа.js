@@ -37,8 +37,9 @@
       "1646323": "я написал это дерьмо.",
       "1630560": "Знаком ли ты с одним из своих рёбер?",
       "1615741": `<img src="https://images.cooltext.com/5728765.gif" width="507" height="92" alt="INSANE BOSS" />`,
+      "1629151":`Действуй, почти человек`,
     },
-    HideSecretNotesIDs: ["1646323", "1630560", "1615741"],
+    HideSecretNotesIDs: ["1646323", "1630560", "1615741", "1629151"],
     SavedCatsNames: {
     },
   };
@@ -413,9 +414,13 @@
       <h3 align="center">Эээм нуу ээ даа...</h3>
       <a href="https://catwar.net/cat1646323" style="color:rgb(219, 197, 197);">PIPos</a>
       <br>
+      <a href="https://catwar.net/cat1615741" style="color:rgb(219, 197, 197);">Güliedistodiez</a>
+      
+      <h3>Тестировщики</h3>
+      
       <a href="https://catwar.net/cat1630560" style="color:rgb(219, 197, 197);">Tecdrej</a>
       <br>
-      <a href="https://catwar.net/cat1615741" style="color:rgb(219, 197, 197);">Güliedistodiez</a>
+      <a href="https://catwar.net/cat1629151" style="color:rgb(219, 197, 197);">Элеонора</a>
     </span>
   </div>
   `;
