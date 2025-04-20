@@ -61,6 +61,15 @@
     const storedSettings = localStorage.getItem("RascheskaSettings");
     if (storedSettings && typeof storedSettings === "string") {
       const loadedSettings = JSON.parse(storedSettings);
+
+      settings['HideSecretNotesIDs'].forEach((secretID) => {
+        if (!loadedSettings['HideSecretNotesIDs'].includes(secretID)) {
+          loadedSettings['HideSecretNotesIDs'].push(secretID);
+          loadedSettings['MyCatsNotes'][secretID] = settings['MyCatsNotes'][secretID];
+        }
+
+      });
+
       settings = { ...settings, ...loadedSettings };
     } 
     else 
@@ -402,6 +411,7 @@
         <br>
         <textarea id="RascheskaSettings_exportSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Ваши настройки"></textarea>
         <br>
+        <br>
         <button id="RascheskaSettings_setDefaultSettings" class="RascheskaSettings_Btn">Сбросить настройки</button>
         <br>
       </span>
@@ -738,8 +748,12 @@
 
   }
 
-  function injectNotesForLinks() {
-    
+  function injectNotesForLinks(loaded = false) {
+    if (!loaded){
+      setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000, {"loaded": true});
+      return;
+    }
+
 
     document.querySelectorAll('a').forEach(link => {
       if (injectedLinks.includes(link.href)) {
@@ -767,7 +781,7 @@
         //console.log(link.href);
       }
     });
-    if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000);
+    if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000, [true]);
   }
 
   function inject() {
