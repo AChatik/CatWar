@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.4
+// @version      1.0.5
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://openuserjs.org/src/scripts/PIPos/%D0%A0%D0%B0%D1%81%D1%87%D0%B5%D1%81%D0%BA%D0%B0.user.js
@@ -33,6 +33,8 @@ var settings = {
   ClickerMaxMoves: -1,
   injectLinksDelay: 1,
   HideEmptyNotes: false,
+  ClickerBaseColor: "#3a3535",
+  ClickerFontColor: "#dbc5c5",
   MyCatsNotes: {
     "1646323": "я написал это дерьмо.",
     "1630560": "Знаком ли ты с одним из своих рёбер?",
@@ -143,11 +145,11 @@ button {
   border: 1px ridge;
   boreder-radius: 5px;
   background-color: #00000000;
-  border-color: rgb(219, 197, 197);
+  border-color: ${settings['ClickerFontColor']};
   opacity: 50%;
 }
 .miniCage:hover {
-  background-color:rgb(219, 197, 197);
+  background-color: ${settings['ClickerFontColor']};
   opacity: 80%;
 }
 .selectedMiniCage {
@@ -339,9 +341,9 @@ a:hover #catNotesForLink {
   padding:10px;
   padding-bottom:30px;
   position: absolute;
-  background-color: rgb(58, 53, 53);
+  background-color: ${settings['ClickerBaseColor']};
   border-radius:10px;
-  color: rgb(219, 197, 197);
+  color: ${settings['ClickerFontColor']};
   transform:translateY(-100%);
   top:20px;
   z-index: 10;
@@ -357,7 +359,7 @@ a:hover #catNotesForLink {
   position: absolute;
   bottom: 0px;
   left: 50%;
-  background-color: rgb(58, 53, 53);
+  background-color: ${settings['ClickerBaseColor']};
   border-radius: 20px;
   transform: translate(-50%,30%);
   padding: 10px;
@@ -406,6 +408,32 @@ var settingsHTML = `
       Таким образом, кликер не палится, можно его включить и играть в лол (проверено).
     </span>
   </td>
+  </tr>
+  <tr>
+    <td>
+      Раскраска клитора
+      <br>
+      <span class="settingDescription">
+        <table>
+          <tr>
+            <td style="padding-right:20px;">
+              Основной цвет 
+            </td>
+            <td>
+              <input type="color" value="${settings['ClickerBaseColor']}" id="RascheskaSettings_ClickerBaseColor">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-right:20px;">
+              Цвет текста 
+            </td>
+            <td>
+              <input type="color" value="${settings['ClickerFontColor']}" id="RascheskaSettings_ClickerFontColor">
+            </td>
+          </tr>
+        </table>
+      </span>
+    </td>
   </tr>
   <tr>
     <td>
@@ -476,12 +504,10 @@ var settingsHTML = `
 var clickerHTML = `
 <div id="clicker">
 <h2 align="center" id="clickerTitle">Клитор</h2>
-<span class="settingDescription" style="width:95%;">
-  <h3>Куда идем?</h3>
-  <table id="targetMiniCages">
-  </table>
-  <span id="clickerTargetInfo">Цель: 0x0</span>
-</span>
+<h3>Куда идем?</h3>
+<table id="targetMiniCages">
+</table>
+<span id="clickerTargetInfo">Цель: 0x0</span>
 <h3>Время перехода</h3>
 <input type="number" id="ClickerActualDelay" value="${settings['ClickerActualDelay']}" placeholder="В секундах">
 <h3>Случайная задержка (шоб не палили типо)</h3>
@@ -538,6 +564,13 @@ function initTargetMiniCages() { //Создает матрицу клеток д
       let div = document.createElement("div");
       div.classList.add("miniCage");
       div.addEventListener("click",()=>{ 
+
+        if (div.classList.contains("selectedMiniCage")) {
+          div.classList.remove(`selectedMiniCage`);
+          isClickerTargetSelected = false;
+          return;
+        }
+
         miniCageClick(x,y); 
         resetSelectedMiniCages();
         isClickerTargetSelected = true;
@@ -603,6 +636,9 @@ function parseDelays() {
 }
 
 function switchClicker() {
+  if (!isClickerTargetSelected) {
+    return;
+  }
   if (settings['EnableClicker']  || clickerMovesCount) {
     settings['EnableClicker'] = false;
     console.log("Клитор остановлен");
@@ -665,6 +701,8 @@ function injectSettings() {
   let ClickerRandomDelayInput = document.querySelector("#RascheskaSettings_ClickerRandomDelay");
   let HideEmptyNotesCheckBox = document.querySelector("#RascheskaSettings_HideEmptyNotes");
   let injectLinksDelayInput = document.querySelector("#RascheskaSettings_injectLinksDelay");
+  let ClickerBaseColorInput = document.querySelector("#RascheskaSettings_ClickerBaseColor");
+  let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
 
   HideClickerCheckBox.addEventListener("change", () => {
     settings['HideClicker'] = HideClickerCheckBox.checked;
@@ -696,6 +734,14 @@ function injectSettings() {
   });
   injectLinksDelayInput.addEventListener("change", () => {
     settings['injectLinksDelay'] = parseFloat(injectLinksDelayInput.value);
+    saveSettings();
+  });
+  ClickerBaseColorInput.addEventListener("change", () => {
+    settings['ClickerBaseColor'] = ClickerBaseColorInput.value;
+    saveSettings();
+  });
+  ClickerFontColorInput.addEventListener("change", () => {
+    settings['ClickerFontColor'] = ClickerFontColorInput.value;
     saveSettings();
   });
 
