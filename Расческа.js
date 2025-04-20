@@ -31,7 +31,8 @@
     ClickerTargetCellNumY: 0,
     HideClicker: false,
     ClickerMaxMoves: -1,
-    injectLinksDelay: 2,
+    injectLinksDelay: 1,
+    HideEmptyNotes: false,
     MyCatsNotes: {
       "1646323": "я написал это дерьмо.",
       "1630560": "Знаком ли ты с одним из своих рёбер?",
@@ -229,6 +230,10 @@
     padding: 4px;
     border-radius: 5px;
   }
+  .settingDescription .settingDescription {
+    background-color:rgb(56, 56, 56);
+    margin:5px;
+  }
 
   textarea {
     background-color: rgba(179, 179, 179, 0.27);
@@ -356,11 +361,32 @@
     </td>
     </tr>
     <tr>
-    <td>
-      Мои заметки
-      <div id="RascheskaSettings_NotesList">
-      </div>
-    </td>
+      <td>
+        Скрыть пустые заметки <input type="checkbox" ${settings['HideEmptyNotes'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_HideEmptyNotes">
+        <br>
+        <span class="settingDescription">
+          Если заметок об игроке нет, плашка с надписью "<i>Заметок пока нет...</i>" не будет отображаться.
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Частота обновления заметок
+        <br>
+        <span class="settingDescription">
+          <input type="number" id="RascheskaSettings_injectLinksDelay" placeholder="в секундах" value="${settings['injectLinksDelay']}">
+          <br>
+          Чем меньше задержка, тем быстрее отображаются заметки у ссылок, но может лагать хз хз.<br>
+          <span class="settingDescription">Введите отрицательное число, чтобы вообще не обновлять заметки</span>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Мои заметки
+        <div id="RascheskaSettings_NotesList">
+        </div>
+      </td>
     </tr>
     <tr>
     <td>
@@ -580,6 +606,8 @@
     let SmoothTimeInput = document.querySelector("#RascheskaSettings_SmoothTime");
     let ClickerActualDelayInput = document.querySelector("#RascheskaSettings_ClickerActualDelay");
     let ClickerRandomDelayInput = document.querySelector("#RascheskaSettings_ClickerRandomDelay");
+    let HideEmptyNotesCheckBox = document.querySelector("#RascheskaSettings_HideEmptyNotes");
+    let injectLinksDelayInput = document.querySelector("#RascheskaSettings_injectLinksDelay");
 
     HideClickerCheckBox.addEventListener("change", () => {
       settings['HideClicker'] = HideClickerCheckBox.checked;
@@ -605,6 +633,15 @@
       settings['ClickerRandomDelay'] = parseFloat(ClickerRandomDelayInput.value);
       saveSettings();
     });
+    HideEmptyNotesCheckBox.addEventListener("change", () => {
+      settings['HideEmptyNotes'] = HideEmptyNotesCheckBox.checked;
+      saveSettings();
+    });
+    injectLinksDelayInput.addEventListener("change", () => {
+      settings['injectLinksDelay'] = parseFloat(injectLinksDelayInput.value);
+      saveSettings();
+    });
+
 
     document.querySelector("#RascheskaSettings_importSettingsSubmitBtn").addEventListener("click", () => {
       const loadedSettings = JSON.parse(document.querySelector("#RascheskaSettings_importSettingsTextArea").value);
@@ -709,10 +746,12 @@
         let catID = link.href.replace('https://catwar.net/cat', '');
         
         let notes = settings['MyCatsNotes'][catID];
+
+        if (notes == undefined && settings['HideEmptyNotes']) return;
+
         console.log(`Вставлена заметка для кота https://catwar.net/cat${catID}`);
         //link.title = notes == undefined ? "Заметок пока нет..." : notes;
         link.addEventListener('mouseenter', () => {
-          noteDiv;
           link.appendChild(noteDiv);
           //notesDiv.style.display = 'block';
           noteDiv.querySelector("#catNotesForLink_noteText").innerHTML = notes == undefined ? "<i>Заметок пока нет...</i>" : notes.replace("\n", "<br>");
@@ -723,7 +762,7 @@
         //console.log(link.href);
       }
     });
-    if (settings['injectLinksDelay'] > 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000);
+    if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000);
   }
 
   function inject() {
