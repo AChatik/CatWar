@@ -748,12 +748,7 @@
 
   }
 
-  function injectNotesForLinks(loaded = false) {
-    if (!loaded){
-      setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000, {"loaded": true});
-      return;
-    }
-
+  function injectNotesForLinks() {
 
     document.querySelectorAll('a').forEach(link => {
       if (injectedLinks.includes(link.href)) {
@@ -781,7 +776,7 @@
         //console.log(link.href);
       }
     });
-    if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000, [true]);
+    if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000);
   }
 
   function inject() {
