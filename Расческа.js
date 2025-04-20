@@ -422,9 +422,11 @@
     </table>
     <span class="settingDescription">  
       <h3 align="center">Эээм нуу ээ даа...</h3>
-      <a href="https://catwar.net/cat1646323" style="color:rgb(219, 197, 197);">PIPos</a>
-      <br>
+            
       <a href="https://catwar.net/cat1615741" style="color:rgb(219, 197, 197);">Güliedistodiez</a>
+      <br>
+      <a href="https://catwar.net/cat1646323" style="color:rgb(219, 197, 197);">PIPos</a>
+
       
       <h3>Тестировщики</h3>
       
