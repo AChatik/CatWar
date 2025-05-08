@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.5
+// @version      1.0.6
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
-// @updateURL    https://openuserjs.org/src/scripts/PIPos/%D0%A0%D0%B0%D1%81%D1%87%D0%B5%D1%81%D0%BA%D0%B0.user.js
-// @downloadURL  https://openuserjs.org/src/scripts/PIPos/%D0%A0%D0%B0%D1%81%D1%87%D0%B5%D1%81%D0%BA%D0%B0.user.js
+// @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
+// @downloadURL  https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
 // @match        http*://*.catwar.net/*
 // @match        http*://*.catwar.su/*
 // @icon         https://catwar.net/cw3/moves/136526.png
