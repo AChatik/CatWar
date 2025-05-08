@@ -30,11 +30,13 @@ var settings = {
   ClickerTargetCellNumX: 0,
   ClickerTargetCellNumY: 0,
   HideClicker: false,
+  TransparentClicker: false,
   ClickerMaxMoves: -1,
   injectLinksDelay: 1,
   HideEmptyNotes: false,
   ClickerBaseColor: "#3a3535",
   ClickerFontColor: "#dbc5c5",
+  DisplayDiagonals: false,
   MyCatsNotes: {
     "1646323": "я написал это дерьмо.",
     "1630560": "Знаком ли ты с одним из своих рёбер?",
@@ -348,11 +350,13 @@ a:hover #catNotesForLink {
   top:20px;
   z-index: 10;
   right: 150px;
+  ${settings['TransparentClicker'] ? "opacity:0%;" : ""}
 }
 
 #ClickerBody:hover {
   top:-10px;
   transform:translateY(0%);
+  ${settings['TransparentClicker'] ? "opacity:100%;" : ""}
 }
 
 #ClickerBodyOpen { 
@@ -366,6 +370,8 @@ a:hover #catNotesForLink {
   padding-bottom: 5px;
   width: 150px;
 }
+
+${settings['DisplayDiagonals'] ? 'div[style*="/cw3/composited/3dea45806ba8475f.png"] {background-image: url(https://s.iimg.su/s/09/WQXFs1kwLMkX9NmlifevmMVZwpaN28oonei1gga6.png), url("/cw3/composited/3dea45806ba8475f.png"), url(https://i.ibb.co/fXc0hf1/diagonali-1.png) !important;}' : ""}
 
 `;
 var settingsHTML = `
@@ -437,10 +443,28 @@ var settingsHTML = `
   </tr>
   <tr>
     <td>
+      Прозрачный клитор <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_TransparentClicker">
+      <br>
+      <span class="settingDescription">
+        Будет отображаться только при наведение (в правом верхнем углу).
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
       Скрыть пустые заметки <input type="checkbox" ${settings['HideEmptyNotes'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_HideEmptyNotes">
       <br>
       <span class="settingDescription">
         Если заметок об игроке нет, плашка с надписью "<i>Заметок пока нет...</i>" не будет отображаться.
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Отображать диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_DisplayDiagonals">
+      <br>
+      <span class="settingDescription">
+        Отображает зоны диагоналей для активного боя (незаконно).
       </span>
     </td>
   </tr>
@@ -503,21 +527,25 @@ var settingsHTML = `
 
 var clickerHTML = `
 <div id="clicker">
-<h2 align="center" id="clickerTitle">Клитор</h2>
-<h3>Куда идем?</h3>
-<table id="targetMiniCages">
-</table>
-<span id="clickerTargetInfo">Цель: 0x0</span>
-<h3>Время перехода</h3>
-<input type="number" id="ClickerActualDelay" value="${settings['ClickerActualDelay']}" placeholder="В секундах">
-<h3>Случайная задержка (шоб не палили типо)</h3>
-<input type="number" id="ClickerRandomDelay" value="${settings['ClickerRandomDelay']}" placeholder="В секундах">
-<br>
-<br>
-<button id="EnableClickerBtn">Поехали!</button> Совершено переходов: <span id="clickerMovesCount">0</span>
-<br>
-<h3>Лимит переходов</h3>
-<input type="number" id="ClickerMaxMoves" value="-1"> <span id="clickerMovesLimitAvarageTime"></span>
+  <div>
+    Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
+    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
+  </div>
+  <h2 align="center" id="clickerTitle">Клитор</h2>
+  <h3>Куда идем?</h3>
+  <table id="targetMiniCages">
+  </table>
+  <span id="clickerTargetInfo">Цель: 0x0</span>
+  <h3>Время перехода</h3>
+  <input type="number" id="ClickerActualDelay" value="${settings['ClickerActualDelay']}" placeholder="В секундах">
+  <h3>Случайная задержка (шоб не палили типо)</h3>
+  <input type="number" id="ClickerRandomDelay" value="${settings['ClickerRandomDelay']}" placeholder="В секундах">
+  <br>
+  <br>
+  <button id="EnableClickerBtn">Поехали!</button> Совершено переходов: <span id="clickerMovesCount">0</span>
+  <br>
+  <h3>Лимит переходов</h3>
+  <input type="number" id="ClickerMaxMoves" value="-1"> <span id="clickerMovesLimitAvarageTime"></span>
 </div>
 `;
 
@@ -682,6 +710,19 @@ function injectClicker() {
   document.querySelector("#ClickerMaxMoves").addEventListener("change", clickerMovesLimit_change);
   document.querySelector("#ClickerActualDelay").addEventListener("change", clickerMovesLimit_change);
   document.querySelector("#ClickerRandomDelay").addEventListener("change", clickerMovesLimit_change);
+  let DisplayDiagonalsCheckBox = document.querySelector("#Clicker_DisplayDiagonals");
+  let TransparentClickerCheckBox = document.querySelector("#Clicker_TransparentClicker");
+  DisplayDiagonalsCheckBox.addEventListener("change", () => {
+    settings['DisplayDiagonals'] = DisplayDiagonalsCheckBox.checked;
+    location.reload();
+    saveSettings();
+  });
+  TransparentClickerCheckBox.addEventListener("change", () => {
+    settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
+    location.reload();
+    saveSettings();
+  });
+
   initTargetMiniCages();
 }
 
@@ -703,6 +744,8 @@ function injectSettings() {
   let injectLinksDelayInput = document.querySelector("#RascheskaSettings_injectLinksDelay");
   let ClickerBaseColorInput = document.querySelector("#RascheskaSettings_ClickerBaseColor");
   let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
+  let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
+  let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
 
   HideClickerCheckBox.addEventListener("change", () => {
     settings['HideClicker'] = HideClickerCheckBox.checked;
@@ -744,7 +787,14 @@ function injectSettings() {
     settings['ClickerFontColor'] = ClickerFontColorInput.value;
     saveSettings();
   });
-
+  DisplayDiagonalsCheckBox.addEventListener("change", () => {
+    settings['DisplayDiagonals'] = DisplayDiagonalsCheckBox.checked;
+    saveSettings();
+  });
+  TransparentClickerCheckBox.addEventListener("change", () => {
+    settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
+    saveSettings();
+  });
 
   document.querySelector("#RascheskaSettings_importSettingsSubmitBtn").addEventListener("click", () => {
     const loadedSettings = JSON.parse(document.querySelector("#RascheskaSettings_importSettingsTextArea").value);
