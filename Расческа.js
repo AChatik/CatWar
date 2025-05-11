@@ -36,6 +36,7 @@ var settings = {
   HideEmptyNotes: false,
   ClickerBaseColor: "#3a3535",
   ClickerFontColor: "#dbc5c5",
+  DiagonalsCompositedId: null,
   DisplayDiagonals: false,
   MyCatsNotes: {
     "1646323": "я написал это дерьмо.",
@@ -230,10 +231,18 @@ button {
   color: #EBBCE1;
 }
 
+.RascheskaCheckbox[disabled] {
+  cursor: not-allowed;
+}
+
 .RascheskaCheckbox:hover {
   background-color: rgba(202, 49, 233, 0.1);
   border-color: #D895D2;
   scale: 1.1;
+}
+
+.RascheskaCheckbox[disabled]:hover {
+  scale: 1;
 }
 
 .RascheskaCheckbox:focus {
@@ -371,7 +380,7 @@ a:hover #catNotesForLink {
   width: 150px;
 }
 
-${settings['DisplayDiagonals'] ? 'div[style*="/cw3/composited/3dea45806ba8475f.png"] {background-image: url(https://s.iimg.su/s/09/WQXFs1kwLMkX9NmlifevmMVZwpaN28oonei1gga6.png), url("/cw3/composited/3dea45806ba8475f.png"), url(https://i.ibb.co/fXc0hf1/diagonali-1.png) !important;}' : ""}
+${settings['DisplayDiagonals'] && (settings['DiagonalsCompositedId'] != null) ? 'div[style*="/cw3/composited/'+settings['DiagonalsCompositedId']+'.png"] {background-image: url(https://s.iimg.su/s/09/WQXFs1kwLMkX9NmlifevmMVZwpaN28oonei1gga6.png), url("/cw3/composited/'+settings['DiagonalsCompositedId']+'.png"), url(https://i.ibb.co/fXc0hf1/diagonali-1.png) !important;}' : ""}
 
 `;
 var settingsHTML = `
@@ -465,6 +474,8 @@ var settingsHTML = `
       <br>
       <span class="settingDescription">
         Отображает зоны диагоналей для активного боя (незаконно).
+        <br>
+        <span style="font-size:120%"><b>Айди картинки кота<b></span> <input id="RascheskaSettings_DiagonalsCompositedId" value="${settings['DiagonalsCompositedId'] != null ? settings['DiagonalsCompositedId'] : ""}">
       </span>
     </td>
   </tr>
@@ -529,7 +540,7 @@ var clickerHTML = `
 <div id="clicker">
   <div>
     Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
-    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
+    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedId'] == null ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
   </div>
   <h2 align="center" id="clickerTitle">Клитор</h2>
   <h3>Куда идем?</h3>
@@ -746,6 +757,7 @@ function injectSettings() {
   let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
   let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
+  let DiagonalsCompositedIdInput = document.querySelector("#RascheskaSettings_DiagonalsCompositedId");
 
   HideClickerCheckBox.addEventListener("change", () => {
     settings['HideClicker'] = HideClickerCheckBox.checked;
@@ -793,6 +805,10 @@ function injectSettings() {
   });
   TransparentClickerCheckBox.addEventListener("change", () => {
     settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
+    saveSettings();
+  });
+  DiagonalsCompositedIdInput.addEventListener("change", () => {
+    settings['DiagonalsCompositedId'] = DiagonalsCompositedIdInput.value;
     saveSettings();
   });
 
