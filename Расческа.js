@@ -20,7 +20,7 @@
 var iconURL = "https://catwar.net/cw3/moves/136526.png";
 
 (function() { 'use strict'; })(); //это че ваще
-DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png|https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
+DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png | https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
 var settings = {
   SmoothEverything: true,
   SmoothTime: 0.2,
@@ -421,6 +421,14 @@ input[type="range"]::-webkit-slider-thumb {
 summary {
   cursor: pointer;
 }
+
+#secret_hleb {
+  opacity:0%;
+}
+#secret_hleb:hover {
+  opacity:100%;
+}
+
 `;
 
 if (settings['DisplayDiagonals']) {
@@ -428,7 +436,7 @@ if (settings['DisplayDiagonals']) {
     id = id['id'].trim();
     let urls = "";
     settings['DiagonalsImages'].split("|").forEach((url) => {
-      urls += `url(${url}),`;
+      urls += `url(${url.trim()}),`;
     });
     inject_CSS += `div[style*="/cw3/composited/${id}.png"] {background-image: ${urls} url("/cw3/composited/${id}.png") !important;}`;
   });
@@ -1015,6 +1023,7 @@ function injectSettings() {
     let id = "";
     settings['DiagonalsCompositedIds'].push({"name":name, "id":id})
     CreateDiagField(diags,i,name,id);
+    saveDiagsData();
     saveSettings();
   }
 
@@ -1095,9 +1104,11 @@ function inject() {
         injectClicker();
       }
     }
-    if (window.location.href.startsWith('https://catwar.net/cat')) {
-      injectNotes();
+    if (window.location.href.startsWith('https://catwar.net/time')) {
+      let HTML =`<img style="width: 400px; height:400px;" align="center" id="secret_hleb" src="https://github.com/AChatik/CatWar/blob/main/hleb.png?raw=true"></img>`;
+      document.querySelector("#branch").innerHTML += HTML;
     }
+    
     injectNotesForLinks();
 
 }
