@@ -1105,7 +1105,7 @@ function inject() {
       }
     }
     if (window.location.href.startsWith('https://catwar.net/time')) {
-      let HTML =`<img style="width: 400px; height:400px;" align="center" id="secret_hleb" src="https://github.com/AChatik/CatWar/blob/main/hleb.png?raw=true"></img>`;
+      let HTML =`<div id="secret_hleb" align="center" style="height:400px; width:100%; background-image: url(&quot;https://github.com/AChatik/CatWar/blob/main/hleb.png?raw=true&quot;);background-repeat: repeat;"></div>`;
       document.querySelector("#branch").innerHTML += HTML;
     }
     
