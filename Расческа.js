@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.6
+// @version      1.0.7
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -20,7 +20,7 @@
 var iconURL = "https://catwar.net/cw3/moves/136526.png";
 
 (function() { 'use strict'; })(); //это че ваще
-
+DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png|https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
 var settings = {
   SmoothEverything: true,
   SmoothTime: 0.2,
@@ -36,8 +36,10 @@ var settings = {
   HideEmptyNotes: false,
   ClickerBaseColor: "#3a3535",
   ClickerFontColor: "#dbc5c5",
-  DiagonalsCompositedId: null,
+  DiagonalsCompositedIds: [{"name":"","id":""}],//[{"name":"Cat name", "id":"image_id"}]
   DisplayDiagonals: false,
+  DiagonalsOpacity: 1,
+  DiagonalsImages: DiagonalsImagesDefault,
   MyCatsNotes: {
     "1646323": "я написал это дерьмо.",
     "1630560": "Знаком ли ты с одним из своих рёбер?",
@@ -60,6 +62,11 @@ function saveSettings() {
   catch (error) {
     console.error("Не удалось сохранить настройки:", error);
   }
+  try {
+    document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
+  }
+  catch {}
+
 }
 
 function loadSettings() {
@@ -85,6 +92,10 @@ function loadSettings() {
 
 loadSettings();
 
+if (settings['DiagonalsImages']=="") {
+  settings['DiagonalsImages'] = DiagonalsImagesDefault;
+}
+
 var clickerMovesCount = 0;
 var isClickerTargetSelected = false;
 
@@ -94,7 +105,7 @@ noteDiv.innerHTML = `
 <span id="catNotesForLink_noteText"><i>Заметок пока нет...</i></span>
 `
 
-const inject_CSS =`
+var inject_CSS =`
 
 a {
   display: inline-block; 
@@ -380,9 +391,50 @@ a:hover #catNotesForLink {
   width: 150px;
 }
 
-${settings['DisplayDiagonals'] && (settings['DiagonalsCompositedId'] != null) ? 'div[style*="/cw3/composited/'+settings['DiagonalsCompositedId']+'.png"] {background-image: url(https://s.iimg.su/s/09/WQXFs1kwLMkX9NmlifevmMVZwpaN28oonei1gga6.png), url("/cw3/composited/'+settings['DiagonalsCompositedId']+'.png"), url(https://i.ibb.co/fXc0hf1/diagonali-1.png) !important;}' : ""}
+.RascheskaSettings_TransparentInput {
+  background-color: #00000000 !important;
+  border:none;
+}
 
+input[type="range"] {
+  -webkit-appearance: none;
+  height: 10px;
+  background: rgb(58, 53, 53);
+  border-radius: 3px;
+  outline: none;
+  border:none;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: rgb(219, 197, 197);
+  cursor: pointer;
+}
+
+
+summary {
+  cursor: pointer;
+}
 `;
+
+if (settings['DisplayDiagonals']) {
+  settings['DiagonalsCompositedIds'].forEach(id => {
+    id = id['id'].trim();
+    let urls = "";
+    settings['DiagonalsImages'].split("|").forEach((url) => {
+      urls += `url(${url}),`;
+    });
+    inject_CSS += `div[style*="/cw3/composited/${id}.png"] {background-image: ${urls} url("/cw3/composited/${id}.png") !important;}`;
+  });
+}
+
+
 var settingsHTML = `
 
 <div id="RascheskaSettings">
@@ -475,7 +527,30 @@ var settingsHTML = `
       <span class="settingDescription">
         Отображает зоны диагоналей для активного боя (незаконно).
         <br>
-        <span style="font-size:120%"><b>Айди картинки кота<b></span> <input id="RascheskaSettings_DiagonalsCompositedId" value="${settings['DiagonalsCompositedId'] != null ? settings['DiagonalsCompositedId'] : ""}">
+        <details >
+            <summary><b>Где мне взять id?</b></summary>
+            <ol>
+              <li>Зайдите в игровую</li>
+              <li>пкм по модельке кота (неважно это ваш кот или нет)</li>
+              <li>Нажмите "Посмотреть код элемента", "Проверить" или как еще там у вас...</li>
+              <li>Найдите строчку по типу url("/cw3/composited/[тут id картинки].png")</li>
+              <li>Скопируйте id картинки и вставьте ее в поле ниже. Например, у меня: 3dea45806ba8475f</li>
+              <li><b>Убедитесь, что вставили только id, без ".png" или "/cw3/composited/" или прочей хуйни ненужной!</b></li>
+            </ol>
+        </details>
+        <div id="RascheskaSettings_DiagonalsList"></div>
+        <br>
+        <button class="RascheskaSettings_Btn" style="width:100%; height:40px;" align="center" id="RascheskaSettings_AddDiagBtn">+</button>
+        <br>
+        Картинка с диагоналями<br>(можно несколько. Для этого разделите ссылки символом "|", например, "ссылка1|ссылка2")
+        <br>
+        <input value="${settings['DiagonalsImages']}" placeholder="${DiagonalsImagesDefault}" style="min-width:650px;" id="RascheskaSettings_DiagonalsImages">
+        <br>
+        <!-- Прозрачность <input type="range" max="1" min="0" step="0.05" value="${settings['DiagonalsOpacity']}" id="RascheskaSettings_DiagonalsOpacity"> <span id="RascheskaSettings_DiagonalsOpacityInfo">${settings['DiagonalsOpacity']*100}%</span>
+        <br> -->
+        <button class="RascheskaSettings_Btn" id="RascheskaSettings_PreviewDiags">Предпросмотр</button>
+        <div id="PreviewDiags">
+        </div>
       </span>
     </td>
   </tr>
@@ -540,7 +615,7 @@ var clickerHTML = `
 <div id="clicker">
   <div>
     Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
-    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedId'] == null ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
+    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedId'].length == 0 ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
   </div>
   <h2 align="center" id="clickerTitle">Клитор</h2>
   <h3>Куда идем?</h3>
@@ -757,7 +832,10 @@ function injectSettings() {
   let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
   let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
-  let DiagonalsCompositedIdInput = document.querySelector("#RascheskaSettings_DiagonalsCompositedId");
+  let AddDiagBtn = document.querySelector("#RascheskaSettings_AddDiagBtn");
+  let PreviewDiagsBtn = document.querySelector("#RascheskaSettings_PreviewDiags");
+  //let DiagonalsOpacity = document.querySelector("#RascheskaSettings_DiagonalsOpacity"); // НЕ НУ А ЧЕ МНЕ ЕЩЕ ДЕЛАТЬ ТО???
+  let DiagonalsImages = document.querySelector("#RascheskaSettings_DiagonalsImages");
 
   HideClickerCheckBox.addEventListener("change", () => {
     settings['HideClicker'] = HideClickerCheckBox.checked;
@@ -780,7 +858,7 @@ function injectSettings() {
     saveSettings();
   });
   ClickerRandomDelayInput.addEventListener("change", () => {
-    settings['ClickerRandomDelay'] = parseFloat(ClickerRandomDelayInput.value);
+    settings['ClickerRandomDelay'] = parseFloat(ClickerRandomDelayInput.value); // СТРАШНО БЛЯТЬ
     saveSettings();
   });
   HideEmptyNotesCheckBox.addEventListener("change", () => {
@@ -806,11 +884,25 @@ function injectSettings() {
   TransparentClickerCheckBox.addEventListener("change", () => {
     settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
     saveSettings();
-  });
-  DiagonalsCompositedIdInput.addEventListener("change", () => {
-    settings['DiagonalsCompositedId'] = DiagonalsCompositedIdInput.value;
+  });// снова копипастим....
+  // DiagonalsOpacity.addEventListener("change", () => {
+  //   settings['DiagonalsOpacity'] = DiagonalsOpacity.value;
+  //   document.querySelector("#RascheskaSettings_DiagonalsOpacityInfo").innerHTML = `${settings['DiagonalsOpacity']*100}%`;
+  //   saveSettings();
+  // }); //увы
+  DiagonalsImages.addEventListener("change", () => {
+    settings['DiagonalsImages'] = DiagonalsImages.value;
     saveSettings();
   });
+  PreviewDiagsBtn.addEventListener("click", () => {
+    let div = document.querySelector("#PreviewDiags");
+    div.replaceChildren(...[]);
+    settings['DiagonalsCompositedIds'].forEach((id) => {
+      let HTML = `<div title="${id['name']}" style="display: inline-block; width:100px; height:150px; scale: 75%; background-image: url(&quot;catwar.net/cw3/composited/${id["id"]}.png&quot;)"></div>`;
+      div.innerHTML += HTML;
+    });
+  });
+
 
   document.querySelector("#RascheskaSettings_importSettingsSubmitBtn").addEventListener("click", () => {
     const loadedSettings = JSON.parse(document.querySelector("#RascheskaSettings_importSettingsTextArea").value);
@@ -818,14 +910,13 @@ function injectSettings() {
     saveSettings();
   });
   document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
-  document.querySelector("#RascheskaSettings_exportSettingsTextArea").innerHTML=JSON.stringify(settings);
   document.querySelector("#RascheskaSettings_setDefaultSettings").addEventListener("click", ()=>{
     console.log("Настройки сброшены!");
     settings = default_settings;
     saveSettings();
   });
 
-
+  // ЗАМЕТКИ
   let notes = document.querySelector("#RascheskaSettings_NotesList"); 
   notes.innerHTML += `<table class="RascheskaSettings_Note settingDescription"></table>`
   let table = notes.querySelector("table");
@@ -878,8 +969,63 @@ function injectSettings() {
   if (table.innerHTML == "") {
     table.innerHTML = "Вы можете добавить заметку в профиле игрока."
   }
-}
 
+  function saveDiagsData() {
+    let diags = document.querySelector("#RascheskaSettings_DiagonalsList");
+    settings['DiagonalsCompositedIds'] = [];
+    diags.childNodes.forEach(diag => {
+      let i = diag.attributes.getNamedItem("my_id").value;
+      let name = diag.querySelector(`#diagName_${i}`);
+      let id = diag.querySelector(`#diagId_${i}`);
+      if (name != null && id != null) {
+          settings['DiagonalsCompositedIds'].push({"name":name.value.trim(), "id":id.value.trim()});
+      }
+    });
+    saveSettings();
+  }
+
+  //ДИАГИ
+
+  function CreateDiagField(diags, i, name, id) {
+    let HTML = `<div id="diag_${i}" my_id="${i}"><input placeholder="Пояснялка" value="${name}" class="RascheskaSettings_TransparentInput" id="diagName_${i}"> </input> <input placeholder="Вставьте id картинки" class="DiagonalsCompositedId" id="diagId_${i}" value="${id}"> <button class="RascheskaSettings_Btn" id="removeDiag_${i}" style="font-size:14px;height:30px; padding:5px;">Удалить</button> </div>`
+
+    diags.insertAdjacentHTML("beforeend",HTML);
+    diags.querySelector(`#diagName_${i}`).addEventListener("change",saveDiagsData);
+    diags.querySelector(`#diagId_${i}`).addEventListener("change",saveDiagsData);
+    diags.querySelector(`#removeDiag_${i}`).addEventListener("click",() => {
+      let diags =  document.querySelector("#RascheskaSettings_DiagonalsList");
+      diags.removeChild(diags.querySelector(`#diag_${i}`));
+      saveDiagsData();
+    });
+  }
+
+  let diags = document.querySelector("#RascheskaSettings_DiagonalsList");
+  let i = 0;
+  settings['DiagonalsCompositedIds'].forEach(data => {
+    let id = data['id'].trim();
+    let name = data['name'].trim();
+    CreateDiagField(diags,i,name,id);
+    i++;
+  }); 
+
+  function AddDiagField() {
+    let diags = document.querySelector("#RascheskaSettings_DiagonalsList");
+    let i = GetLastDiagId()+1;
+    let name = "";
+    let id = "";
+    settings['DiagonalsCompositedIds'].push({"name":name, "id":id})
+    CreateDiagField(diags,i,name,id);
+    saveSettings();
+  }
+
+  AddDiagBtn.addEventListener("click", () => {
+    AddDiagField();
+  });
+
+}
+function GetLastDiagId(){
+  return settings['DiagonalsCompositedIds'].length-1;
+}
 function injectNotes() {
   let place = document.querySelector("#branch");
   place.style.position = "relative";
