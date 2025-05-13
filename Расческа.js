@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.7
+// @version      1.0.8
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -17,10 +17,13 @@
 // @copyright 2025, PIPos (https://github.com/AChatik)
 // ==/UserScript==
 
-var iconURL = "https://catwar.net/cw3/moves/136526.png";
+"не use strict"; // мне сказали это круто...
+// а нет, я почитал и чота не хочу пока. не крутой даже в своем коде
+// а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
+"не use strict"; // хотя не. оно ломает код. боже пишу как хочу. ну это же КРУТО ЭТО СВОБОДА ЭТО МОЙ ВЫБОР ПУСТЬ ДАЖЕ НЕ КРУТОЙ.
 
-(function() { 'use strict'; })(); //это че ваще
-DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png | https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
+var iconURL = "https://catwar.net/cw3/moves/136526.png";
+var DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png | https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
 var settings = {
   SmoothEverything: true,
   SmoothTime: 0.2,
@@ -1108,7 +1111,10 @@ function inject() {
       let HTML =`<div id="secret_hleb" align="center" style="height:400px; width:100%; background-image: url(&quot;https://github.com/AChatik/CatWar/blob/main/hleb.png?raw=true&quot;);background-repeat: repeat;"></div>`;
       document.querySelector("#branch").innerHTML += HTML;
     }
-    
+    if (window.location.href.startsWith('https://catwar.net/cat')) {
+      injectNotes();
+    }
+   
     injectNotesForLinks();
 
 }
