@@ -271,10 +271,11 @@ button {
   font-size: 12pt;
   padding: 4px;
   border-radius: 5px;
+  width:100%;
 }
 .settingDescription .settingDescription {
   background-color:rgb(56, 56, 56);
-  margin:5px;
+  width:auto;
 }
 
 textarea {
@@ -283,12 +284,14 @@ textarea {
   color: black;
   padding:10px;
 }
+
 textarea:focus {
   background-color: rgb(85, 85, 85);
   color: white;
   border-radius: 5px;
   padding:2px;
 }
+
 #catNotesForLink {
   z-index: 228;
   position: absolute;
@@ -555,7 +558,7 @@ var settingsHTML = `
         <br>
         Картинка с диагоналями<br>(можно несколько. Для этого разделите ссылки символом "|", например, "ссылка1|ссылка2")
         <br>
-        <input value="${settings['DiagonalsImages']}" placeholder="${DiagonalsImagesDefault}" style="min-width:650px;" id="RascheskaSettings_DiagonalsImages">
+        <input value="${settings['DiagonalsImages']}" placeholder="${DiagonalsImagesDefault}" style="width:100%;" id="RascheskaSettings_DiagonalsImages">
         <br>
         <!-- Прозрачность <input type="range" max="1" min="0" step="0.05" value="${settings['DiagonalsOpacity']}" id="RascheskaSettings_DiagonalsOpacity"> <span id="RascheskaSettings_DiagonalsOpacityInfo">${settings['DiagonalsOpacity']*100}%</span>
         <br> -->
@@ -580,15 +583,17 @@ var settingsHTML = `
   <tr>
     <td>
       Мои заметки
-      <div id="RascheskaSettings_NotesList">
-      </div>
+      <span class="settingDescription">
+        <div id="RascheskaSettings_NotesList">
+        </div>
+      </span>
     </td>
   </tr>
   <tr>
   <td>
     Импорт/экспорт настроек и заметок
     <br>
-    <span class="settingDescription" style="padding:20px">
+    <span class="settingDescription" style="padding: 20px">
       <textarea id="RascheskaSettings_importSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Вставьте настройки сюда."></textarea>
       <br>
       <button id="RascheskaSettings_importSettingsSubmitBtn" class="RascheskaSettings_Btn">Импортировать</button>
@@ -626,7 +631,7 @@ var clickerHTML = `
 <div id="clicker">
   <div>
     Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
-    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedId'].length == 0 ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
+    Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedIds'].length == 0 ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
   </div>
   <h2 align="center" id="clickerTitle">Клитор</h2>
   <h3>Куда идем?</h3>
@@ -929,7 +934,7 @@ function injectSettings() {
 
   // ЗАМЕТКИ
   let notes = document.querySelector("#RascheskaSettings_NotesList"); 
-  notes.innerHTML += `<table class="RascheskaSettings_Note settingDescription"></table>`
+  notes.innerHTML += `<table class="RascheskaSettings_Note"></table>`
   let table = notes.querySelector("table");
   table.style.padding = "20px";
   for (var [ID, note] of Object.entries(settings['MyCatsNotes'])) {
