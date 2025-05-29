@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.8
+// @version      1.0.9
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -49,6 +49,18 @@ var settings = {
     "1615741": `<img src="https://images.cooltext.com/5728765.gif" width="507" height="92" alt="INSANE BOSS">`,
     "1629151":`Действуй, почти-человек`,
   },
+  SavedMessages: [
+    {
+      "sender_id": "1646323",
+      "sender_name": "PIPos",
+      "html": `<h3>Привет, привет! <a href="https://catwar.net/cat1646323">Напиши мне</a></h3>`,
+      "saved_from": "", //cw3 | ls
+      "save_time": "Когда-то",
+      "subject": "( = )",
+      "origin": "<span>Тут будет отображаться сообщение в первоначальном виде.</span>",
+      "id":"0"
+    }
+  ],
   HideSecretNotesIDs: ["1646323", "1630560", "1615741", "1629151"],
   SavedCatsNames: {
   },
@@ -289,7 +301,8 @@ textarea:focus {
   background-color: rgb(85, 85, 85);
   color: white;
   border-radius: 5px;
-  padding:2px;
+  padding:5px;
+  outline: none;
 }
 
 #catNotesForLink {
@@ -433,6 +446,148 @@ summary {
 }
 #secret_hleb:hover {
   opacity:100%;
+}
+#messList {
+  background-color: #00000000;
+  padding: 5px;
+  border-radius: 10px;
+  width:100%;
+
+}
+#messList tr {
+  padding: 5px;
+}
+#messList tr th {
+  text-align: center;
+} 
+
+#messList tr td {
+  padding: 5px;
+  text-align: center;
+}
+#messList tr td input.del {
+  cursor: pointer;
+  width:50px;
+} 
+#messList tr td input.del:hover {
+  background-color: #990000;
+}
+
+#messList tr.msg_read::before  {
+  content: "Прочитано";
+  text-align: center;
+  color:rgb(134, 194, 134);
+  display:block;
+}
+
+#messList tr.msg_notRead::before  {
+  content: "Не прочитано.";
+  text-align: center;
+  color:rgb(194, 134, 134);
+  display:block;
+}
+
+#messList, #messList tr, #messList tr td {
+  background: rgb(59, 59, 59);
+}
+#messList tr th {
+  background: rgb(85, 77, 77);
+  height: 35px;
+}
+#messList tr td a.msg_open { 
+  text-align: left;
+}
+#messList tr:first-child::before {
+  content: "Статус";
+  color: white;
+  font-weight: bold;
+  text-align: center;
+  display:block;
+  background: rgb(85, 77, 77);
+  padding: 1px;
+  height: 35px;
+  vertical-align: middle;
+}
+
+#savedMessages {
+  background: rgb(59, 59, 59);
+  padding:20px;
+  border: none;
+  border-radius: 20px;
+  
+}
+#savedMessages table {
+  width:100%;
+}
+#savedMessages table tr th, #messList tr th  {
+  color: white;
+}
+#savedMessages table tr td, #messList tr td {
+  color: #AAAAAA;
+}
+#savedMessages table tr td, #savedMessages table tr th {
+  padding:5px;
+  text-align: center;
+  font-family: Comic Sans MS;
+  border-radius: 10px !important;
+  max-width:800px;
+  max:height:500px;
+}
+#savedMessages table tr td a, #messList tr td a {
+  color: #FFDDDD; 
+  cursor: pointer !important;
+}
+#savedMessages table tr td table {
+  border-color: #FFDDDD;
+  border-radius: 10px;
+}
+#savedMessages table tr td summary {
+  color: #FFDDDD;
+  
+  border-radius: 10px;
+  width: 100%;
+  padding:5px;
+  margin-bottom:10px;
+}
+#savedMessages table tr td summary:hover {
+  background: rgb(85, 77, 77);
+}
+#savedMessages table tr td details[open] > :nth-child(2), #savedMessagesSummary[open] > :nth-child(2){
+  animation-name: fadeInDown;
+  animation-duration: 0.5s;
+}
+#savedMessages table tr td details:not([open]) > :nth-child(2), #savedMessagesSummary:not([open]) > :nth-child(2) {
+  animation-name: fadeOutUp;
+  animation-duration: 0.5s;
+}
+
+#savedMessages table tr td details[open] summary {
+  animation: none !important;
+}
+@keyframes fadeInDown {
+  0% {
+      opacity: 0;
+      transform: translateY(-1.25em);
+  }
+  100% {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+@keyframes fadeOutUp {
+  0% {
+      opacity: 1;
+      transform: translateY(0);
+  }
+  100% {
+      opacity: 0;
+      transform: translateY(-1.25em);
+  }
+}
+#savedMessagesSummary {
+  margin-top: 20px;
+  font-size:14pt;
+  margin-bottom: 20px;
 }
 
 `;
@@ -1095,6 +1250,99 @@ function injectNotesForLinks() {
   });
   if (settings['injectLinksDelay'] >= 0 ) setTimeout(injectNotesForLinks, settings['injectLinksDelay']*1000);
 }
+function getSavedMessageById(id) {
+  let res = false;
+  settings['SavedMessages'].forEach(msg => {
+    if (msg['id'] == id) {
+      res = msg;
+    }
+  })
+  return res;
+}
+function injectMessageSaver() {
+  if (window.location.href.startsWith("https://catwar.net/ls?id=")) {
+    let msg = document.querySelector("#msg_table");
+    if (msg == null) {
+      setTimeout(injectMessageSaver, 0.2);
+      return;
+    }
+    let sender_href = msg.querySelector("#msg_login").href;
+    let sender_name = msg.querySelector("#msg_login").innerHTML;
+    let html = msg.querySelector(".parsed").innerHTML;
+    let subject = msg.querySelector("#msg_subject")
+    let id = new URLSearchParams(document.location.search).get("id");
+    let data = {
+      "sender_href": sender_href,
+      "sender_name": sender_name, 
+      "html": html,
+      "saved_from": "ls", //cw3 | ls
+      "save_time": Date.now().toISOString,
+      "subject": subject.innerHTML,
+      "origin": msg.innerHTML,
+      "id": id
+    };
+    let is_saved = getSavedMessageById(id) != false;
+    console.log(`Сообщение ${id} ${is_saved}`);
+    let save_btn = document.createElement("button");
+    save_btn.innerHTML = "Сохранить"
+    save_btn.addEventListener("click", () => {
+      if (is_saved) return;
+      is_saved = true;
+      settings['SavedMessages'].push(data);
+      save_btn.innerHTML = "Сохранено!";
+      save_btn.enabled = false;
+      saveSettings();
+    })
+    if (!is_saved) {
+      msg.insertAdjacentElement("afterend", save_btn);
+    }
+    
+  }
+  else if (window.location.href.startsWith("https://catwar.net/ls")) {
+    let div = document.createElement("div");
+    div.open = true;
+    div.id = "savedMessages";
+    table = document.createElement("table");
+    table.innerHTML = "<tr><th>Отправитель</th><th>Сообщение</th><th>Оригинал</th><th></th>";
+    settings['SavedMessages'].forEach(msg => {
+      if (msg == null) return;
+      let tr = document.createElement("tr");
+      tr.innerHTML = `
+          <td><a hreft="${msg['sender_href']}}">${msg['sender_name']}</a></td>
+          <td>${msg['html']}</td>
+          <td orig>
+            <details>
+            <summary>Оригинал</summary>
+            <table border="1">${msg['origin']}</table>
+            </details>
+          </td>
+          <td id="saved_msg_tools">
+          </td>
+      `;
+      
+      let del_msg_btn = document.createElement("button");
+      del_msg_btn.innerHTML = "Удалить";
+      del_msg_btn.classList.add("RascheskaSettings_Btn");
+      del_msg_btn.addEventListener("click", () => {
+        console.log("Сообщение удалено");
+        del_msg_btn.enabled=false;
+        if (del_msg_btn.innerHTML == "Удалено!") return;
+        del_msg_btn.innerHTML = "Удалено!";
+        settings['SavedMessages'].splice(settings['SavedMessages'].indexOf(msg),1);
+        saveSettings();
+
+      });
+      tr.querySelector("#saved_msg_tools").insertAdjacentElement("beforeend",del_msg_btn);
+      table.insertAdjacentElement("beforeend",tr);
+    });
+    div.insertAdjacentElement("beforeend", table);
+    let details = document.createElement("details");
+    details.innerHTML += "<summary id=\"savedMessagesSummary\">Сохраннные сообщения</summary>";
+    details.insertAdjacentElement("beforeend", div)
+    document.querySelector("#branch").insertAdjacentElement("beforeend", details);
+    document.querySelector("#links").insertAdjacentHTML("beforeend"," | <a href=\"#savedMessagesSummary\">Сохраненные сообщения</a>")
+  }
+}
 
 function inject() {
     //подсос стилей 
@@ -1119,8 +1367,9 @@ function inject() {
     if (window.location.href.startsWith('https://catwar.net/cat')) {
       injectNotes();
     }
-   
+    injectMessageSaver();
     injectNotesForLinks();
+    
 
 }
 
