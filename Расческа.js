@@ -1402,7 +1402,7 @@ function injectMessageSaver() {
     console.log(`Сообщение ${id} ${is_saved}`);
     let save_btn = document.createElement("button");
     save_btn.classList.add("RascheskaSettings_Btn");
-    save_btn.innerHTML = "Сохранить"
+    save_btn.innerHTML = "Сохранить",
     save_btn.addEventListener("click", () => {
       if (is_saved) return;
       is_saved = true;
@@ -1412,7 +1412,9 @@ function injectMessageSaver() {
       saveSettings();
     })
     if (!is_saved) {
+      
       msg.insertAdjacentElement("afterend", save_btn);
+      msg.insertAdjacentHTML("afterend", `<div style="height: 20px;"></div>`);
     }
     
   }
@@ -1443,7 +1445,7 @@ function injectMessageSaver() {
       table.insertAdjacentHTML("beforeend", `
         <tr>
           <td colspan="9">
-            <h3 style="background-color: rgb(131, 112, 112); border-radius: 10px; padding:5px; color:rgb(51, 44, 44);">${key}</h3>
+            <h3 style="background-color: rgb(172, 155, 155); border-radius: 10px; padding:5px; color:rgb(51, 44, 44);">${key}</h3>
           </td>
         </tr>
       `);
