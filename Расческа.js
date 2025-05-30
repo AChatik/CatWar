@@ -560,7 +560,10 @@ summary {
   animation-name: fadeOutUp;
   animation-duration: 0.5s;
 }
-
+#savedMessages table tr td img {
+  width: 100px !important;
+  height: 100px !important;
+}
 #savedMessages table tr td details[open] summary {
   animation: none !important;
 }
@@ -589,7 +592,74 @@ summary {
   font-size:14pt;
   margin-bottom: 20px;
 }
+#savedMessageOrigin table, #savedMessageOrigin table tr, #savedMessageOrigin table tr td  {
+  border-color: #FFDDDD;
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  padding: 5px;
+}
+#savedMessageOrigin {
+  position: fixed;
+  top:50%;
+  left:50%;
+  padding: 30px;
+  background: rgb(59, 59, 59) !important;
+  transform: translate(-50%,-50%);
+  max-width:85%;
+  min-width:70%;
+  max-height: 80%;
+  border-radius: 20px;
+  overflow: auto;
+  color: #DDDDDD;
+  filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.3));
+}
+#savedMessageOrigin table tr td#msg_info a, #savedMessageOrigin table tr td a#answer, #savedMessageOrigin table tr td a#report {
+  color: #FFDDDD;
+}
 
+#savedMessageOrigin table tr th {
+  color: #FFDDDD !important;
+}
+#savedMessageOrigin table tr td span#msg_subject {
+  color: #FFDDDD !important;
+}
+
+#savedMessageOriginBlack {
+  background: black;
+  opacity: 30%;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+  width:100%;
+  height:100%;
+  cursor: pointer;
+}
+#savedMessageOriginDiv {
+  animation-name: openMessageOrigin;
+  animation-duration: 0.3s;
+  animation-timing-function: animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}
+@keyframes openMessageOrigin {
+  0% {
+    opacity: 0%;
+  }
+  100% {
+    opacity: 100%;
+
+  }
+}
+#savedMessages table tr td.SavedMessagePreviewText {
+  color: #DDDDDD;
+}
+#savedMessageMessage {
+  
+}
+#savedMessageMessage:hover {
+  background: rgb(85, 77, 77);
+  cursor: pointer;
+
+}
 `;
 
 if (settings['DisplayDiagonals']) {
@@ -1219,14 +1289,31 @@ function injectNotes() {
   });
 
 }
+function groupSavedMessagesBySubject(msgs) {
+  let g = {};
+  msgs.forEach((item) => {
+    let s = item['subject'];
+    if (s.startsWith("Re: ")) {
+      s = s.substring(4,s.length);
+    }
+    if (g[s] === undefined) {
+      g[s] = [item];
+    }
+    else {
+      g[s].push(item);
+    }
+    
+  });
+  return g;
+}
 
 function injectNotesForLinks() {
 
   document.querySelectorAll('a').forEach(link => {
-    if (injectedLinks.includes(link.href)) {
+    if (injectedLinks.includes(link)) {
       return;
     }
-    injectedLinks.push(link.href);
+    injectedLinks.push(link);
     if (link.href.startsWith("https://catwar.net/cat")) {
       
       let catID = link.href.replace('https://catwar.net/cat', '');
@@ -1259,6 +1346,35 @@ function getSavedMessageById(id) {
   })
   return res;
 }
+
+function hideSavedMessageOrigin(e) {
+  document.querySelector("body").removeChild(e);
+}
+
+function showSavedMessageOrigin(html) {
+  let div = document.createElement("div");
+  let content = document.createElement("div");
+  content.insertAdjacentHTML("afterbegin", `<div style="width:100%; height: 30px; position: absolute; top:0px; left:0px; margin-bottom: 50px;  border-radius: 20px 20px 0px 0px ; background: rgb(85, 77, 77);"></div><div style="margin-bottom:10px"></div>`);
+  content.align = "center";
+  content.id = "savedMessageOrigin";
+  content.insertAdjacentHTML('beforeend',html);
+  let bg = document.createElement("div");
+  bg.id = "savedMessageOriginBlack";
+  document.addEventListener('keydown', function(e) {
+  if (e.key == "Escape") {
+    hideSavedMessageOrigin(div);
+  }
+});
+  bg.addEventListener("click", () => {
+    hideSavedMessageOrigin(div);
+  });
+  div.insertAdjacentElement("beforeend", bg );
+  div.insertAdjacentElement("beforeend", content);
+  div.id = "savedMessageOriginDiv";
+  document.querySelector("body").insertAdjacentElement("beforeend", div);
+  
+}
+
 function injectMessageSaver() {
   if (window.location.href.startsWith("https://catwar.net/ls?id=")) {
     let msg = document.querySelector("#msg_table");
@@ -1271,12 +1387,13 @@ function injectMessageSaver() {
     let html = msg.querySelector(".parsed").innerHTML;
     let subject = msg.querySelector("#msg_subject")
     let id = new URLSearchParams(document.location.search).get("id");
+    let now = new Date();
     let data = {
       "sender_href": sender_href,
       "sender_name": sender_name, 
       "html": html,
       "saved_from": "ls", //cw3 | ls
-      "save_time": Date.now().toISOString,
+      "save_time": `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()} в ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
       "subject": subject.innerHTML,
       "origin": msg.innerHTML,
       "id": id
@@ -1284,6 +1401,7 @@ function injectMessageSaver() {
     let is_saved = getSavedMessageById(id) != false;
     console.log(`Сообщение ${id} ${is_saved}`);
     let save_btn = document.createElement("button");
+    save_btn.classList.add("RascheskaSettings_Btn");
     save_btn.innerHTML = "Сохранить"
     save_btn.addEventListener("click", () => {
       if (is_saved) return;
@@ -1303,38 +1421,68 @@ function injectMessageSaver() {
     div.open = true;
     div.id = "savedMessages";
     table = document.createElement("table");
-    table.innerHTML = "<tr><th>Отправитель</th><th>Сообщение</th><th>Оригинал</th><th></th>";
-    settings['SavedMessages'].forEach(msg => {
-      if (msg == null) return;
-      let tr = document.createElement("tr");
-      tr.innerHTML = `
-          <td><a hreft="${msg['sender_href']}}">${msg['sender_name']}</a></td>
-          <td>${msg['html']}</td>
-          <td orig>
-            <details>
-            <summary>Оригинал</summary>
-            <table border="1">${msg['origin']}</table>
-            </details>
-          </td>
-          <td id="saved_msg_tools">
-          </td>
-      `;
-      
-      let del_msg_btn = document.createElement("button");
-      del_msg_btn.innerHTML = "Удалить";
-      del_msg_btn.classList.add("RascheskaSettings_Btn");
-      del_msg_btn.addEventListener("click", () => {
-        console.log("Сообщение удалено");
-        del_msg_btn.enabled=false;
-        if (del_msg_btn.innerHTML == "Удалено!") return;
-        del_msg_btn.innerHTML = "Удалено!";
-        settings['SavedMessages'].splice(settings['SavedMessages'].indexOf(msg),1);
-        saveSettings();
+    table.innerHTML = `<tr><th>Отправитель</th><th>Дата сохранения</th><th>Сообщение</th><th style="color: #AAAAAA">Удаление</th>`;
 
+      //"sender_id": "1646323",
+      //"sender_name": "PIPos",
+      //"html": `<h3>Привет, привет! <a href="https://catwar.net/cat1646323">Напиши мне</a></h3>`,
+      //"saved_from": "", //cw3 | ls
+      //"save_time": "Когда-то",
+      //"subject": "( = )",
+      //"origin": "<span>Тут будет отображаться сообщение в первоначальном виде.</span>",
+      //"id":"0"
+
+      // <td>${msg['html']}</td>
+      //      <details>
+      //      <summary>Оригинал</summary>
+      //      <table border="1">${msg['origin']}</table>
+      //     </details>
+    let lastSubject = "";
+    let g = groupSavedMessagesBySubject(settings['SavedMessages']);
+    Object.keys(g).forEach(key => {
+      table.insertAdjacentHTML("beforeend", `
+        <tr>
+          <td colspan="9">
+            <h3 style="background-color: rgb(131, 112, 112); border-radius: 10px; padding:5px; color:rgb(51, 44, 44);">${key}</h3>
+          </td>
+        </tr>
+      `);
+      g[key].forEach(msg => {
+        if (msg == null) return;
+        let tr = document.createElement("tr");
+        let previewText = $('<div/>').html(msg['html']).text();
+        let maxLen = 130;
+        tr.innerHTML = `
+            <td style="border-left: 2px solid #FFDDDD;"> <a href="${msg['sender_href']}">${msg['sender_name']}</a></td>
+            <td>${msg['save_time'] == undefined ? 'Когда-то' : msg['save_time']}</td>
+            <td class="SavedMessagePreviewText" title="Нажмите, чтобы посмотреть оригинал" id="savedMessageMessage">
+              <span class="savedMessageMessage" style="color: #EEEEEE; font-size: 16px;">${  previewText.length > maxLen ? previewText.substring(0, maxLen) + "..." : previewText }</span>
+            </td>
+            <td id="saved_msg_tools">
+            </td>
+        `;
+        
+        let del_msg_btn = document.createElement("button");
+        del_msg_btn.innerHTML = "Удалить";
+        del_msg_btn.classList.add("RascheskaSettings_Btn");
+        del_msg_btn.addEventListener("click", () => {
+          console.log("Сообщение удалено");
+          del_msg_btn.enabled=false;
+          if (del_msg_btn.innerHTML == "Удалено!") return;
+          del_msg_btn.innerHTML = "Удалено!";
+          settings['SavedMessages'].splice(settings['SavedMessages'].indexOf(msg),1);
+          saveSettings();
+
+        });
+        let open_origin_msg_btn = tr.querySelector("#savedMessageMessage");
+        open_origin_msg_btn.addEventListener("click",() => {
+          showSavedMessageOrigin(`<table>${msg['origin']}</table>`);
+        }); 
+        tr.querySelector("#saved_msg_tools").insertAdjacentElement("beforeend",del_msg_btn);
+        table.insertAdjacentElement("beforeend",tr);
       });
-      tr.querySelector("#saved_msg_tools").insertAdjacentElement("beforeend",del_msg_btn);
-      table.insertAdjacentElement("beforeend",tr);
     });
+
     div.insertAdjacentElement("beforeend", table);
     let details = document.createElement("details");
     details.innerHTML += "<summary id=\"savedMessagesSummary\">Сохраннные сообщения</summary>";
