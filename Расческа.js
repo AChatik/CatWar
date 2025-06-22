@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.0.9
+// @version      1.1.0
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -73,7 +73,7 @@ var injectedLinks = [];
 function saveSettings() {
   try {
     localStorage.setItem("RascheskaSettings", JSON.stringify(settings));
-  } 
+  }
   catch (error) {
     console.error("Не удалось сохранить настройки:", error);
   }
@@ -98,8 +98,8 @@ function loadSettings() {
     });
 
     settings = { ...settings, ...loadedSettings };
-  } 
-  else 
+  }
+  else
   {
     console.log("Нет сохраненных настроек");
   }
@@ -123,11 +123,11 @@ noteDiv.innerHTML = `
 var inject_CSS =`
 
 a {
-  display: inline-block; 
+  display: inline-block;
   border: 2px solid transparent;
-  border-radius: 5px; 
-  transition: ${settings['SmoothTime']}s ease; 
-  text-decoration: none; 
+  border-radius: 5px;
+  transition: ${settings['SmoothTime']}s ease;
+  text-decoration: none;
 }
 
 a:hover {
@@ -192,12 +192,12 @@ button {
   gap: 10px;
   font-family: Comic Sans MS;
   padding: 15px;
-  border: 1px solid #ccc; 
-  border-radius: 20px; 
+  border: 1px solid #ccc;
+  border-radius: 20px;
   background-color:rgb(59, 59, 59);
   color:#ffffff;
   font-size: 20pt;
-  
+
 
 }
 #RascheskaSettings h1 {
@@ -314,14 +314,14 @@ textarea:focus {
   color:white;
   opacity: 0%;
   pointer-events: none;
-  
+
 }
 
 #catNotesForLink_noteText {
   color: rgb(201, 201, 201);
   font-size:14px !important;
   font-family Verdana !important;
-} 
+}
 
 a #catNotesForLink {
   margin-bottom: 10px;
@@ -333,7 +333,7 @@ a:hover #catNotesForLink {
 }
 
 #catNotes {
-  
+
   position: absolute;
   right:100px;
   top:20px;
@@ -370,9 +370,9 @@ a:hover #catNotesForLink {
   color:rgb(58, 53, 53);
 }
 .RascheskaSettings_Textarea {
-  background-color: #00000000; 
-  color:rgb(200,200,200); 
-  height: 200px; 
+  background-color: #00000000;
+  color:rgb(200,200,200);
+  height: 200px;
   width: 500px;
 }
 
@@ -398,7 +398,7 @@ a:hover #catNotesForLink {
   ${settings['TransparentClicker'] ? "opacity:100%;" : ""}
 }
 
-#ClickerBodyOpen { 
+#ClickerBodyOpen {
   position: absolute;
   bottom: 0px;
   left: 50%;
@@ -459,7 +459,7 @@ summary {
 }
 #messList tr th {
   text-align: center;
-} 
+}
 
 #messList tr td {
   padding: 5px;
@@ -468,7 +468,7 @@ summary {
 #messList tr td input.del {
   cursor: pointer;
   width:50px;
-} 
+}
 #messList tr td input.del:hover {
   background-color: #990000;
 }
@@ -494,7 +494,7 @@ summary {
   background: rgb(85, 77, 77);
   height: 35px;
 }
-#messList tr td a.msg_open { 
+#messList tr td a.msg_open {
   text-align: left;
 }
 #messList tr:first-child::before {
@@ -514,7 +514,7 @@ summary {
   padding:20px;
   border: none;
   border-radius: 20px;
-  
+
 }
 #savedMessages table {
   width:100%;
@@ -534,7 +534,7 @@ summary {
   max:height:500px;
 }
 #savedMessages table tr td a, #messList tr td a {
-  color: #FFDDDD; 
+  color: #FFDDDD;
   cursor: pointer !important;
 }
 #savedMessages table tr td table {
@@ -543,7 +543,7 @@ summary {
 }
 #savedMessages table tr td summary {
   color: #FFDDDD;
-  
+
   border-radius: 10px;
   width: 100%;
   padding:5px;
@@ -653,7 +653,7 @@ summary {
   color: #DDDDDD;
 }
 #savedMessageMessage {
-  
+
 }
 #savedMessageMessage:hover {
   background: rgb(85, 77, 77);
@@ -723,7 +723,7 @@ var settingsHTML = `
         <table>
           <tr>
             <td style="padding-right:20px;">
-              Основной цвет 
+              Основной цвет
             </td>
             <td>
               <input type="color" value="${settings['ClickerBaseColor']}" id="RascheskaSettings_ClickerBaseColor">
@@ -731,7 +731,7 @@ var settingsHTML = `
           </tr>
           <tr>
             <td style="padding-right:20px;">
-              Цвет текста 
+              Цвет текста
             </td>
             <td>
               <input type="color" value="${settings['ClickerFontColor']}" id="RascheskaSettings_ClickerFontColor">
@@ -831,19 +831,19 @@ var settingsHTML = `
       <button id="RascheskaSettings_setDefaultSettings" class="RascheskaSettings_Btn">Сбросить настройки</button>
       <br>
     </span>
-    
+
     </div>
   </td>
   </tr>
   </table>
-  <span class="settingDescription">  
+  <span class="settingDescription">
     <h3 align="center">Эээм нуу ээ даа...</h3>
     <b><a href="https://catwar.net/cat1646323" style="color:rgb(219, 197, 197);">PIPos</a></b>
     <br>
     <a href="https://catwar.net/cat1615741" style="color:rgb(219, 197, 197);">Güliedistodiez</a>
-    
+
     <h3>Тестировщики</h3>
-    
+
     <a href="https://catwar.net/cat1630560" style="color:rgb(219, 197, 197);">Tecdrej</a>
     <br>
     <a href="https://catwar.net/cat1629151" style="color:rgb(219, 197, 197);">Элеонора</a>
@@ -898,7 +898,7 @@ function getCage(x, y) { //Возвращает клетку
   return result;
 }
 
-function miniCageClick(x,y) { 
+function miniCageClick(x,y) {
   settings['ClickerTargetCellNumX'] = x;
   settings['ClickerTargetCellNumY'] = y;
   document.querySelector("#clickerTargetInfo").innerHTML = "Цель: "+x+'x'+y;
@@ -918,7 +918,7 @@ function initTargetMiniCages() { //Создает матрицу клеток д
       let td = document.createElement("td");
       let div = document.createElement("div");
       div.classList.add("miniCage");
-      div.addEventListener("click",()=>{ 
+      div.addEventListener("click",()=>{
 
         if (div.classList.contains("selectedMiniCage")) {
           div.classList.remove(`selectedMiniCage`);
@@ -926,7 +926,7 @@ function initTargetMiniCages() { //Создает матрицу клеток д
           return;
         }
 
-        miniCageClick(x,y); 
+        miniCageClick(x,y);
         resetSelectedMiniCages();
         isClickerTargetSelected = true;
         div.classList.add("selectedMiniCage");
@@ -943,7 +943,7 @@ function initTargetMiniCages() { //Создает матрицу клеток д
 // =====================================================================================================================================================================
 
 function updateClickerTitle(delay) {
-  
+
   let title = document.querySelector("#clickerTitle");
   if (delay <= 0 || !settings['EnableClicker'] ) {
     title.innerHTML = "Клитор";
@@ -1010,7 +1010,7 @@ function switchClicker() {
     document.querySelector("#clicker").innerHTML += "Задержка должна быть числом!";
     return;
   }
-  
+
   ClickerClick();
 }
 
@@ -1022,12 +1022,12 @@ function clickerMovesLimit_change() {
     parseDelays();
     document.querySelector("#clickerMovesLimitAvarageTime").innerHTML = `Осталось примерно ${new Date((settings['ClickerActualDelay'] + settings['ClickerRandomDelay']/2)*1000*settings['ClickerMaxMoves']).toISOString().substring(11,19)}`;
   }
-  
+
 }
 
 //внедрение кликера
 function injectClicker() {
-  
+
   let clickerPlace = document.querySelector("html");
   let div = document.createElement("div");
   div.id = "ClickerBody";
@@ -1158,7 +1158,7 @@ function injectSettings() {
   });
 
   // ЗАМЕТКИ
-  let notes = document.querySelector("#RascheskaSettings_NotesList"); 
+  let notes = document.querySelector("#RascheskaSettings_NotesList");
   notes.innerHTML += `<table class="RascheskaSettings_Note"></table>`
   let table = notes.querySelector("table");
   table.style.padding = "20px";
@@ -1182,7 +1182,7 @@ function injectSettings() {
         </td>
       </tr>
     `;
-    
+
   }
   //КАКОЙ ЖЕ ПОНОС.
   table.querySelectorAll('[id^="RascheskaSettings_DeleteNoteBtn_"]').forEach((delBtn) => {
@@ -1247,7 +1247,7 @@ function injectSettings() {
     let name = data['name'].trim();
     CreateDiagField(diags,i,name,id);
     i++;
-  }); 
+  });
 
   function AddDiagField() {
     let diags = document.querySelector("#RascheskaSettings_DiagonalsList");
@@ -1281,7 +1281,7 @@ function injectNotes() {
   textAreaDiv.innerHTML=`<textarea id="catNotes" style="; width: 450px; height: 200px;" placeholder="Заметки. Вы можете использовать HTML теги, например, <h1>Заголовок</h1>">${ notes == undefined ? "" : notes}</textarea>`;
   //place.innerHTML = place.innerHTML = place.innerHTML.replace('<br clear="left">', `<br><br><br clear="left">`) ;
   place.appendChild(  textAreaDiv);
-  
+
   place.querySelector("#catNotes").addEventListener("change", () => {
     settings['MyCatsNotes'][catID] = place.querySelector("#catNotes").value;
     console.log(`Заметка сохранена (${settings['MyCatsNotes'][catID]})`);
@@ -1302,7 +1302,7 @@ function groupSavedMessagesBySubject(msgs) {
     else {
       g[s].push(item);
     }
-    
+
   });
   return g;
 }
@@ -1315,9 +1315,9 @@ function injectNotesForLinks() {
     }
     injectedLinks.push(link);
     if (link.href.startsWith("https://catwar.net/cat")) {
-      
+
       let catID = link.href.replace('https://catwar.net/cat', '');
-      
+
       let notes = settings['MyCatsNotes'][catID];
 
       if (notes == undefined && settings['HideEmptyNotes']) return;
@@ -1372,7 +1372,7 @@ function showSavedMessageOrigin(html) {
   div.insertAdjacentElement("beforeend", content);
   div.id = "savedMessageOriginDiv";
   document.querySelector("body").insertAdjacentElement("beforeend", div);
-  
+
 }
 
 function injectMessageSaver() {
@@ -1390,7 +1390,7 @@ function injectMessageSaver() {
     let now = new Date();
     let data = {
       "sender_href": sender_href,
-      "sender_name": sender_name, 
+      "sender_name": sender_name,
       "html": html,
       "saved_from": "ls", //cw3 | ls
       "save_time": `${now.getDate()}-${now.getMonth()+1}-${now.getFullYear()} в ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
@@ -1412,11 +1412,11 @@ function injectMessageSaver() {
       saveSettings();
     })
     if (!is_saved) {
-      
+
       msg.insertAdjacentElement("afterend", save_btn);
       msg.insertAdjacentHTML("afterend", `<div style="height: 20px;"></div>`);
     }
-    
+
   }
   else if (window.location.href.startsWith("https://catwar.net/ls")) {
     let div = document.createElement("div");
@@ -1463,7 +1463,7 @@ function injectMessageSaver() {
             <td id="saved_msg_tools">
             </td>
         `;
-        
+
         let del_msg_btn = document.createElement("button");
         del_msg_btn.innerHTML = "Удалить";
         del_msg_btn.classList.add("RascheskaSettings_Btn");
@@ -1479,7 +1479,7 @@ function injectMessageSaver() {
         let open_origin_msg_btn = tr.querySelector("#savedMessageMessage");
         open_origin_msg_btn.addEventListener("click",() => {
           showSavedMessageOrigin(`<table>${msg['origin']}</table>`);
-        }); 
+        });
         tr.querySelector("#saved_msg_tools").insertAdjacentElement("beforeend",del_msg_btn);
         table.insertAdjacentElement("beforeend",tr);
       });
@@ -1494,8 +1494,23 @@ function injectMessageSaver() {
   }
 }
 
+function FixGenderDisplay()
+{
+    let avatarFemka = document.querySelector(`#branch p img[src*="/avatar/"][style*="pink"]`);
+    let avatarMale = document.querySelector(`#branch p img[src*="/avatar/"][style*="blue"]`);
+    if (avatarFemka != null) {
+      //avatar.insertAdjacentHTML("afterend","<span>Кошка</span>");
+      document.querySelector(`#branch p big`).innerHTML += " (кошка)";//` (<font style="color: pink;">кошка</font>)`;
+    }
+    if (avatarMale != null) {
+      //avatar.insertAdjacentHTML("afterend","<span>Кошка</span>");
+      document.querySelector(`#branch p big`).innerHTML += " (кот)";  //` (<font style="color: blue;">кот</font>)`;
+    }
+
+}
+
 function inject() {
-    //подсос стилей 
+    //подсос стилей
     let head = document.querySelector("head");
     let styleNode = document.createElement("style");
     styleNode.innerHTML = inject_CSS;
@@ -1516,10 +1531,11 @@ function inject() {
     }
     if (window.location.href.startsWith('https://catwar.net/cat')) {
       injectNotes();
+      FixGenderDisplay();
     }
     injectMessageSaver();
     injectNotesForLinks();
-    
+
 
 }
 
