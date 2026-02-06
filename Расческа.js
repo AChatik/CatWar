@@ -1767,7 +1767,7 @@ class OptimalGuesser {
         }
     }
     getRemainingAttempts() {
-        return (this.max - this.min + 1)/2;
+      return Math.ceil(Math.log2(this.max - this.min + 1)) + this.history.length;
     }
 
     getStats() {
@@ -1790,8 +1790,9 @@ function DigitGameSolver() {
   let stats = DigitGameSolver.OptimalGuesser.getStats();
   let precent = Math.round(stats.attempts / stats.worstCaseLeft * 100);
   if (precent != NaN) {
-    DigitGameSolver.startBtn.innerHTML = "казино выкачено на " + precent + `%<br>ОСТАНОВИТЬ ВЫКАЧИВАНИЕ КАЗИКА НАХРЕН!!!!🛑🛑🛑<br><hr style="width: ${100-Math.round((Date.now() - DigitGameSolver.lastMessageTime) / DigitGameSolver.currentDelay * 100)}%; max-width: 100%; left: 0px; border-style: none ; background-color: white; height:5px; margin: 5px; corner-radius:2.5px; opacity:70%;"></hr>`;
 
+    DigitGameSolver.startBtn.innerHTML = "казино выкачено на " + precent + `%<br>ОСТАНОВИТЬ ВЫКАЧИВАНИЕ КАЗИКА НАХРЕН!!!!🛑🛑🛑<br><hr style="max-width: 100%; left: 0px; border-style: solid ; transition: width 0.2s ease; background-color: white; height:5px; margin: 5px; border-radius: 3px; opacity:70%;"></hr>`;
+    DigitGameSolver.startBtn.querySelector("hr").setAttribute("width", `${100-Math.round((Date.now() - DigitGameSolver.lastMessageTime) / DigitGameSolver.currentDelay * 100)}%`);
   }
 
   if (DigitGameSolver.lastResponse == null) {
@@ -1806,10 +1807,11 @@ function DigitGameSolver() {
       
       let respText = DigitGameSolver.lastResponse.querySelector(".parsed").innerHTML;
       let type = respText.split()[0];
-      if (type == "Молодец, ") {
+      if (type.includes("Молодец,") && DigitGameSolver.OptimalGuesser.history.length > 0) {
+        console.log("Ура! Мы угадали число!");
         DigitGameSolver.OptimalGuesser = new OptimalGuesser();
-        DigitGameSolver.startBtn.click();
-
+        injectDigitGameSolver.resetStartBtn(startBtn);
+        return;
       }
       DigitGameSolver.OptimalGuesser.update(type);
     }
@@ -1849,7 +1851,7 @@ function DigitGameSolver() {
     return;
   }
   DigitGameSolver.inProgress = false;
-  if (!DigitGameSolver.inProgress) setTimeout(DigitGameSolver, 500);
+  if (!DigitGameSolver.inProgress) setTimeout(DigitGameSolver, 100);
 
 }
 DigitGameSolver.inProgress = false;
@@ -1870,7 +1872,6 @@ DigitGameSolver.getLastResponse = function(chat_table) {
   return r;
 }
 
-
 function injectDigitGameSolver() {
   if (!window.location.href.startsWith(`https://${domain}/chat`)) return;
 
@@ -1885,6 +1886,7 @@ function injectDigitGameSolver() {
     startBtn.classList.add("RascheskaSettings_Btn");
     startBtn.addEventListener("click", e => {
       if (!DigitGameSolver.isRunning) {
+        
         startBtn.innerHTML = "ХВАТИТ ВЫКАЧИВАТЬ";
         DigitGameSolver.isRunning = true;
         DigitGameSolver.OptimalGuesser = new OptimalGuesser();
@@ -1892,9 +1894,8 @@ function injectDigitGameSolver() {
         DigitGameSolver();
       }
       else {
-        startBtn.innerHTML = "НАЧАТЬ ВЫКАЧКУ КАЗИНО!!!!💥💥💥";
-        document.querySelector("#mess").setAttribute("contenteditable", true);
-        DigitGameSolver.isRunning = false;
+        injectDigitGameSolver.resetStartBtn(startBtn);
+
       }
       
     })
@@ -1909,13 +1910,19 @@ function injectDigitGameSolver() {
       return;
     }
     if (tabs == null || tabs.children.length == 0) {
-      setTimeout(checkLoad, 0.2);
+      setTimeout(checkLoad, 200);
     }
     else {
-      setTimeout(Loaded, 0.4);
+      setTimeout(Loaded, 400);
     }
   }
   checkLoad();
+}
+
+injectDigitGameSolver.resetStartBtn = function(startBtn) {
+    startBtn.innerHTML = "НАЧАТЬ ВЫКАЧКУ КАЗИНО!!!!💥💥💥";
+    document.querySelector("#mess").setAttribute("contenteditable", true);
+    DigitGameSolver.isRunning = false;
 }
 
 function inject() {
