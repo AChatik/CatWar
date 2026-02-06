@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.1.0
+// @version      1.2.0
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -27,6 +27,9 @@ console.log("domain: "+ domain);
 var iconURL = "https://${domain}/cw3/moves/136526.png";
 var DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png | https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
 var settings = {
+  me: {
+    myId: null
+  },
   SmoothEverything: true,
   SmoothTime: 0.2,
   ClickerRandomDelay: 25,
@@ -63,6 +66,14 @@ var settings = {
       "id":"0"
     }
   ],
+  Aim: {
+    enabled: false,
+    target: null,
+  },
+  DigitGameSolver: {
+    minTimeDelay: 2000,
+    randomTimeDelay: 4000
+  },
   HideSecretNotesIDs: ["1646323", "1630560", "1615741", "1629151"],
   SavedCatsNames: {
   },
@@ -859,6 +870,7 @@ var clickerHTML = `
   <div>
     Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
     Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedIds'].length == 0 ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
+    Аим <input type="checkbox" ${settings.Aim.enabled ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_EnableAim">
   </div>
   <h2 align="center" id="clickerTitle">Клитор</h2>
   <h3>Куда идем?</h3>
@@ -1039,8 +1051,10 @@ function injectClicker() {
   document.querySelector("#ClickerMaxMoves").addEventListener("change", clickerMovesLimit_change);
   document.querySelector("#ClickerActualDelay").addEventListener("change", clickerMovesLimit_change);
   document.querySelector("#ClickerRandomDelay").addEventListener("change", clickerMovesLimit_change);
+  
   let DisplayDiagonalsCheckBox = document.querySelector("#Clicker_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#Clicker_TransparentClicker");
+  let Clicker_EnableAim = document.querySelector("#Clicker_EnableAim");
   DisplayDiagonalsCheckBox.addEventListener("change", () => {
     settings['DisplayDiagonals'] = DisplayDiagonalsCheckBox.checked;
     location.reload();
@@ -1051,7 +1065,10 @@ function injectClicker() {
     location.reload();
     saveSettings();
   });
-
+  Clicker_EnableAim.addEventListener("change", () => {
+    settings.Aim.enabled = Clicker_EnableAim.checked;
+    saveSettings();
+  });
   initTargetMiniCages();
 }
 
@@ -1075,6 +1092,8 @@ function injectSettings() {
   let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
   let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
+  TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
+  
   let AddDiagBtn = document.querySelector("#RascheskaSettings_AddDiagBtn");
   let PreviewDiagsBtn = document.querySelector("#RascheskaSettings_PreviewDiags");
   //let DiagonalsOpacity = document.querySelector("#RascheskaSettings_DiagonalsOpacity"); // НЕ НУ А ЧЕ МНЕ ЕЩЕ ДЕЛАТЬ ТО???
@@ -1127,7 +1146,9 @@ function injectSettings() {
   TransparentClickerCheckBox.addEventListener("change", () => {
     settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
     saveSettings();
-  });// снова копипастим....
+  });
+  
+  // снова копипастим....
   // DiagonalsOpacity.addEventListener("change", () => {
   //   settings['DiagonalsOpacity'] = DiagonalsOpacity.value;
   //   document.querySelector("#RascheskaSettings_DiagonalsOpacityInfo").innerHTML = `${settings['DiagonalsOpacity']*100}%`;
@@ -1217,7 +1238,7 @@ function injectSettings() {
     let diags = document.querySelector("#RascheskaSettings_DiagonalsList");
     settings['DiagonalsCompositedIds'] = [];
     diags.childNodes.forEach(diag => {
-      let i = diag.attributes.getNamedItem("my_id").value;
+      let i = diag.attributes.getNamedItem("myId").value;
       let name = diag.querySelector(`#diagName_${i}`);
       let id = diag.querySelector(`#diagId_${i}`);
       if (name != null && id != null) {
@@ -1230,7 +1251,7 @@ function injectSettings() {
   //ДИАГИ
 
   function CreateDiagField(diags, i, name, id) {
-    let HTML = `<div id="diag_${i}" my_id="${i}"><input placeholder="Пояснялка" value="${name}" class="RascheskaSettings_TransparentInput" id="diagName_${i}"> </input> <input placeholder="Вставьте id картинки" class="DiagonalsCompositedId" id="diagId_${i}" value="${id}"> <button class="RascheskaSettings_Btn" id="removeDiag_${i}" style="font-size:14px;height:30px; padding:5px;">Удалить</button> </div>`
+    let HTML = `<div id="diag_${i}" myId="${i}"><input placeholder="Пояснялка" value="${name}" class="RascheskaSettings_TransparentInput" id="diagName_${i}"> </input> <input placeholder="Вставьте id картинки" class="DiagonalsCompositedId" id="diagId_${i}" value="${id}"> <button class="RascheskaSettings_Btn" id="removeDiag_${i}" style="font-size:14px;height:30px; padding:5px;">Удалить</button> </div>`
 
     diags.insertAdjacentHTML("beforeend",HTML);
     diags.querySelector(`#diagName_${i}`).addEventListener("change",saveDiagsData);
@@ -1518,6 +1539,385 @@ function FixGenderDisplay()
     
 }
 
+function simulateKeyPress(key, event="keydown") {
+  let e = new KeyboardEvent(event, {
+  'key': key,
+  'code': 'Key'+key,
+  'charCode': key.charCodeAt(0),
+  'keyCode': key.charCodeAt(0),
+  'which': key.charCodeAt(0),
+  'shiftKey': false
+  });
+  document.dispatchEvent(e);
+}
+
+function hideSetTargetButtons() {
+  document.querySelectorAll("button.setTargetBtn").forEach(btn => {
+    btn.parentElement.removeChild(btn);
+  });
+
+}
+
+function hideTargetImage() {
+  let old = document.querySelector("#AimTargetImage");
+  if (old != null) old.parentElement.removeChild(old);
+
+}
+
+
+function angle(cx, cy, ex, ey) {
+  var dy = ey - cy;
+  var dx = ex - cx;
+  var theta = Math.atan2(dy, dx);
+  theta *= 180 / Math.PI;
+  if (theta < 0) theta = 360 + theta;
+  return theta;
+}
+
+function getAngleToTarget(arrow, target) {
+  let x1 = arrow.getBoundingClientRect().x;
+  let y1 = arrow.getBoundingClientRect().y;
+  let x2 = target.getBoundingClientRect().x;
+  let y2 = target.getBoundingClientRect().y;
+  let a = angle(x1, y1, x2, y2);
+  return a;
+}
+
+function getArrowAngle(arrow) {  
+  let data = arrow.style.transform.split();
+  let r = null;
+  data.forEach(d => {
+    if (d.includes("rotate")) {
+      d = d.replace("rotate(","").replace("deg)","");
+      d = d.replace("deg)","")
+      r= parseFloat(d);
+    }
+  });
+
+  if (r != null) {
+    r+=180;
+    while (true) {
+      if (r > 360) {
+        r -= 360;
+      }
+      else {
+        break;
+      }
+    }
+  }
+
+  return r;
+
+}  
+
+function getAimRotationDirection(targetA, currentA) {
+
+  let diff = targetA - currentA;
+
+  if (diff > 180) {
+      diff -= 360;
+  } else if (diff < -180) {
+      diff += 360;
+  }
+
+  let key;
+  if (diff > 0) {
+      key = "L";
+  } else {
+      key = "J";
+  }
+  
+  return key;
+}
+
+function AimUpdate() {
+  let arrow = document.querySelector("#arrow"+settings.me.myId);
+  let target = null;
+  if (settings.Aim.enabled && arrow != null) {
+    let cats = document.querySelectorAll(`.catWithArrow`);
+    cats.forEach(cat => {
+      let name = cat.querySelector(`.cat_tooltip u a`).innerHTML;
+      if (name == settings.Aim.target) {
+        target = cat;
+        let img = document.createElement("img");
+        img.src = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/target.png";
+        img.style.position = "absolute";
+        img.style.height = "auto";
+        img.style.width = "100%";
+        img.style.top = "25px";
+        img.style.opacity = "40%";
+        img.id = "AimTargetImage";
+        hideTargetImage();
+        //cat.querySelector(".cat").style.position = "relative";
+        cat.insertAdjacentElement("beforeend", img);
+      }
+      if (AimUpdate.injectedCats.includes(cat)) return;
+
+      let setTargetBtn = document.createElement("button");
+      setTargetBtn.innerHTML = "X";
+      setTargetBtn.title = "Пометить как цель для наведения";
+      setTargetBtn.style.margin = "5px"; 
+      setTargetBtn.classList.add("setTargetBtn");
+      setTargetBtn.classList.add("RascheskaSettings_Btn");
+      setTargetBtn.addEventListener("click", (e) => {
+        if (settings.Aim.target == name) {
+          settings.Aim.target = null;
+          hideTargetImage();
+          resetAimUpdateKeys();
+
+          return;
+        }
+        settings.Aim.target = name;
+      });
+      cat.style.position = "relative";
+      setTargetBtn.style.position = "absolute";
+      setTargetBtn.style.zIndex = 10;
+      setTargetBtn.style.right = "0px";
+      setTargetBtn.style.bottom = "0px";
+      setTargetBtn.style.width = "25px";
+      setTargetBtn.style.height = "25px";
+      setTargetBtn.style.fontSize = "12px";
+      setTargetBtn.style.padding = "2px";
+      setTargetBtn.style.rotat =
+      cat.insertAdjacentElement("beforeend", setTargetBtn)
+      AimUpdate.injectedCats.push(cat);
+    });
+    
+    if (target != null) {
+      let targetA = getAngleToTarget(arrow, target);
+      let currentA = getArrowAngle(arrow);
+      //console.log(currentA, targetA);
+      if (Math.abs(currentA - targetA) > 10) {
+        if (!AimUpdate.isKeyPressed) {
+          let key = getAimRotationDirection(targetA, currentA);
+
+          
+          simulateKeyPress(key);
+          console.log("Rotating arrow");
+          AimUpdate.pressedKey = key;
+          AimUpdate.isKeyStopped = false;
+          AimUpdate.isKeyPressed = true;
+        }
+      }
+      else {
+        if (!AimUpdate.isKeyStopped) {
+          AimUpdate.isKeyStopped = true;
+          AimUpdate.isKeyPressed = false;
+          simulateKeyPress(AimUpdate.pressedKey, "keyup");
+          console.log("Stop arrow rotation");
+        }
+      }
+    }
+
+  }
+  else {
+    hideSetTargetButtons();
+    hideTargetImage();
+    AimUpdate.injectedCats = [];
+
+  }
+  
+}
+function resetAimUpdateKeys() {
+  AimUpdate.isKeyPressed = false;
+  AimUpdate.isKeyStopped = false;
+  AimUpdate.pressedKey = "J";
+}
+resetAimUpdateKeys();
+AimUpdate.injectedCats = [];
+
+async function aimUpdater() {
+  AimUpdate();
+  setTimeout(aimUpdater, 0.2);
+}
+
+function injectAim() {
+  console.log("Внедряем аим...")
+  aimUpdater();
+
+}
+
+class OptimalGuesser {
+    constructor(min = -100000000000000, max = 100000000000000) {
+        this.min = min;
+        this.max = max;
+        this.history = [];
+        this.boundaryNumber = 0;
+    }
+
+    getGuess() {
+        let guess = 0;
+        if (this.history.length > 0) guess = Math.floor((this.min + this.max) / 2);
+        this.history.push({ guess, range: [this.min, this.max] });
+        this.boundaryNumber = guess;
+        return guess;
+    }
+    update(response) {
+        const cleanResponse = response.toLowerCase();
+        
+        if (cleanResponse.includes('больше')) {
+            this.min = Math.max(this.min, this.boundaryNumber);
+        } else if (cleanResponse.includes('меньше')) {
+            this.max = Math.min(this.max, this.boundaryNumber);
+        }
+        
+        if (this.min > this.max) {
+            console.error(`Ошибка: min(${this.min}) > max(${this.max})`);
+            throw new Error('Противоречивые ответы');
+        }
+    }
+    getRemainingAttempts() {
+        return (this.max - this.min + 1)/2;
+    }
+
+    getStats() {
+        return {
+            currentRange: [this.min, this.max],
+            history: this.history,
+            attempts: this.history.length,
+            worstCaseLeft: this.getRemainingAttempts()
+        };
+    }
+}
+
+function DigitGameSolver() {
+  if (!DigitGameSolver.isRunning) return;
+  DigitGameSolver.inProgress = true;
+  let mess_form = document.querySelector("#mess");
+  let chat_table = document.querySelector("#tab_divs").querySelector("[style=\"display: block;\"]").querySelector("table.chat_table");
+  mess_form.setAttribute("contenteditable", false);
+
+  let stats = DigitGameSolver.OptimalGuesser.getStats();
+  let precent = Math.round(stats.attempts / stats.worstCaseLeft * 100);
+  if (precent != NaN) {
+    DigitGameSolver.startBtn.innerHTML = "казино выкачено на " + precent + `%<br>ОСТАНОВИТЬ ВЫКАЧИВАНИЕ КАЗИКА НАХРЕН!!!!🛑🛑🛑<br><hr style="width: ${100-Math.round((Date.now() - DigitGameSolver.lastMessageTime) / DigitGameSolver.currentDelay * 100)}%; max-width: 100%; left: 0px; border-style: none ; background-color: white; height:5px; margin: 5px; corner-radius:2.5px; opacity:70%;"></hr>`;
+
+  }
+
+  if (DigitGameSolver.lastResponse == null) {
+    DigitGameSolver.lastResponse = DigitGameSolver.getLastResponse(chat_table);
+  }
+  //console.log(Date.now() - DigitGameSolver.lastMessageTime, DigitGameSolver.currentDelay, DigitGameSolver.state)
+  if (Date.now() - DigitGameSolver.lastMessageTime > DigitGameSolver.currentDelay && DigitGameSolver.state == "guessing") {
+    console.log("Угадываем число...");
+    let delay = Math.random() * settings.DigitGameSolver.randomTimeDelay + settings.DigitGameSolver.randomTimeDelay;
+    console.log("Ждем "+delay/1000+" секунд");
+    if (DigitGameSolver.lastResponse != null) {
+      
+      let respText = DigitGameSolver.lastResponse.querySelector(".parsed").innerHTML;
+      let type = respText.split()[0];
+      if (type == "Молодец, ") {
+        DigitGameSolver.OptimalGuesser = new OptimalGuesser();
+        DigitGameSolver.startBtn.click();
+
+      }
+      DigitGameSolver.OptimalGuesser.update(type);
+    }
+    let guess = DigitGameSolver.OptimalGuesser.getGuess();
+    mess_form.innerHTML = "/number "+guess;
+    document.querySelector("#mess_submit").click();
+    console.log("Ждем ответа от Системолапа...");
+    DigitGameSolver.currentDelay = delay;
+    DigitGameSolver.lastMessageTime = Date.now();
+    DigitGameSolver.state = "waitingResponse";
+  }
+  if (DigitGameSolver.state == "waitingResponse") {
+    if (document.querySelector("#error").innerHTML == "Не флудите." && document.querySelector("#error").style.display == "block") {
+      
+      if (!DigitGameSolver.isResending ) {
+        console.warn("Попались на флуде! Чуток ждем...");
+        DigitGameSolver.isResending = true;
+        setTimeout(() => {
+          DigitGameSolver.isResending = false;
+          document.querySelector("#mess_submit").click();
+        },20000)
+      }
+      
+    }
+    if (DigitGameSolver.getLastResponse(chat_table) != null && DigitGameSolver.lastResponse != null) {
+      //console.log(DigitGameSolver.getLastResponse(chat_table).getAttribute("data-id"), DigitGameSolver.lastResponse.getAttribute("data-id"), DigitGameSolver.lastResponse)
+    }
+    if ((DigitGameSolver.getLastResponse(chat_table) != null && DigitGameSolver.lastResponse == null) || DigitGameSolver.getLastResponse(chat_table).getAttribute("data-id") != DigitGameSolver.lastResponse.getAttribute("data-id")) {
+      console.log("Ответ от Системолапа получен");
+      DigitGameSolver.lastResponse = DigitGameSolver.getLastResponse(chat_table);
+      DigitGameSolver.state = "guessing";
+    }
+  }
+
+  if (!DigitGameSolver.isRunning) {
+    mess_form.setAttribute("contenteditable", false);
+    return;
+  }
+  DigitGameSolver.inProgress = false;
+  if (!DigitGameSolver.inProgress) setTimeout(DigitGameSolver, 500);
+
+}
+DigitGameSolver.inProgress = false;
+DigitGameSolver.lastResponse = null;
+DigitGameSolver.state = "guessing";
+DigitGameSolver.isRunning = false;
+DigitGameSolver.lastMessageTime = 0;
+DigitGameSolver.currentDelay = 1;
+DigitGameSolver.getLastResponse = function(chat_table) {
+  r = null;
+  return chat_table.querySelectorAll(".mess_tr")[0];
+  chat_table.querySelectorAll(".mess_tr").forEach(m => {
+    if (m.querySelector(".author_td a").innerHTML == "Системолап" && m.querySelector("parsed").innerHTML.includes(", ")) {
+      r = m;
+      return;
+    }
+  });
+  return r;
+}
+
+
+function injectDigitGameSolver() {
+  if (!window.location.href.startsWith(`https://${domain}/chat`)) return;
+
+  let startCheckLoadTime = Date.now();
+
+  function Loaded() {
+    if (!document.querySelector(`#online a`).href.includes("cat44")) return;
+    if (!document.querySelector(`#online font`).innerHTML.includes("Смотрит на тебя")) return;
+    console.log("Открыт чат с системолапом, внедряем выкачку казино...");
+    let startBtn = document.createElement("button");
+    startBtn.innerHTML = "НАЧАТЬ ВЫКАЧКУ КАЗИНО!!!!💥💥💥";
+    startBtn.classList.add("RascheskaSettings_Btn");
+    startBtn.addEventListener("click", e => {
+      if (!DigitGameSolver.isRunning) {
+        startBtn.innerHTML = "ХВАТИТ ВЫКАЧИВАТЬ";
+        DigitGameSolver.isRunning = true;
+        DigitGameSolver.OptimalGuesser = new OptimalGuesser();
+        DigitGameSolver.startBtn = startBtn;
+        DigitGameSolver();
+      }
+      else {
+        startBtn.innerHTML = "НАЧАТЬ ВЫКАЧКУ КАЗИНО!!!!💥💥💥";
+        document.querySelector("#mess").setAttribute("contenteditable", true);
+        DigitGameSolver.isRunning = false;
+      }
+      
+    })
+    document.querySelector("#tabs").insertAdjacentElement("beforeend", startBtn);
+  }
+
+  function checkLoad() {
+    let tabs = document.querySelector("#online");
+    
+    if (Date.now() - startCheckLoadTime > 6000) {
+      console.warn("Не удалось внедрить выкачку казино (страница не загрузилась)");
+      return;
+    }
+    if (tabs == null || tabs.children.length == 0) {
+      setTimeout(checkLoad, 0.2);
+    }
+    else {
+      setTimeout(Loaded, 0.4);
+    }
+  }
+  checkLoad();
+}
+
 function inject() {
     //подсос стилей 
     let head = document.querySelector("head");
@@ -1533,6 +1933,7 @@ function inject() {
       if (!settings['HideClicker']) {
         injectClicker();
       }
+      injectAim();
     }
     if (window.location.href.startsWith(`https://${domain}/time`)) {
       let HTML =`<div id="secret_hleb" align="center" style="height:400px; width:100%; background-image: url(&quot;https://github.com/AChatik/CatWar/blob/main/hleb.png?raw=true&quot;);background-repeat: repeat;"></div>`;
@@ -1544,6 +1945,40 @@ function inject() {
     }
     injectMessageSaver();
     injectNotesForLinks();
+    injectDigitGameSolver();
+}
+settings.DigitGameSolver.minTimeDelay = 3000;
+settings.DigitGameSolver.randomTimeDelay = 5000;
+async function parseMyId() {
+  let myId = null;
+  let r = await fetch("https://catwar.su");
+  let html = await r.text();
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+  myId = doc.querySelector(`#id_val`).innerHTML;
+  return myId;
+}
+async function tryParseMyID() {
+  if (settings.me.myId == null) {
+    console.log("Идентифицируем вашего кота...");
+    let myId = null;
+    try {
+      myId = await parseMyId();
+    }
+    catch {
+      console.error("parse err");
+    }
+    if (myId != null) {
+      settings.me.myId = myId;
+      saveSettings();
+      console.log("Ваш кот идентифицирован! Ваш ID: "+myId);
+    }
+    else console.warn("Не удалось идентифицировать вашего кота. Некоторые функции могут не работать...");
+  }
 }
 
-inject();
+async function main() {
+  await tryParseMyID();
+  inject();
+}
+main();
