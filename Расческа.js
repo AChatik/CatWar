@@ -28,8 +28,10 @@ var iconURL = "https://${domain}/cw3/moves/136526.png";
 var DiagonalsImagesDefault = "https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag1.png | https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/diag2.png";
 var settings = {
   me: {
-    myId: null
+    myId: null,
+    myName: "Котик"
   },
+  isFirstRun: true,
   SmoothEverything: true,
   SmoothTime: 0.2,
   ClickerRandomDelay: 25,
@@ -365,7 +367,8 @@ a:hover #catNotesForLink {
 
 }
 
-.RascheskaSettings_Btn {
+
+.RascheskaSettings_Btn, .Rascheska_Block {
   padding:10px;
   border-radius:10px;
   background-color: rgb(58, 53, 53);
@@ -1925,6 +1928,50 @@ injectDigitGameSolver.resetStartBtn = function(startBtn) {
     DigitGameSolver.isRunning = false;
 }
 
+function greetings() {
+  if (settings.isFirstRun == false) return;
+  tryParseMyID();
+  settings.isFirstRun =false;
+  let html = `
+  <div style="left: 50%; width:40%; border-width: 0px; position: fixed; transform: translate(-50%, 0); top: -20px;" class="Rascheska_Block hide_up" id="RascheskaSettings">
+    <div style="position: relative;">
+    <p align="center" style="font-size: 14pt; color: #DDD">Привет, ${settings.me.myName}!</p>
+    <h1 align="center" style="font-size: 24pt;"><span>Расческа</span> установлена!</h1>
+    <p align="center" style="font-size: 14pt; color: #DDD"><span style="color: #FFAAAA;">Внимание!</span> Некоторые функции могут нарушать ОПИ!<br>
+    Перейдите в <a style="color: rgb(235, 188, 225);" href="https://${domain}/settings">Настройки</a> для изменения параметров мода.</p>
+    <hr align="center" id="RascheskaGreetingsProgressBar"  style="position: absolute; bottom: -40px; opacity: 80%; border-width: 0px;background-color: white; border-style: solid; border-radius: 4px; height: 6px; width: 100%;"></hr>
+    </div>
+  </div>`;
+  
+  saveSettings();
+  document.querySelector("html").insertAdjacentHTML("beforeend", html)
+  let _ = document.querySelector("div.hide_up#RascheskaSettings");
+  _.style.top = "-100%";
+  setTimeout(() => {
+    _.style.top = "-20px";
+    _.animate(
+      [{top: "-100%", opacity: "0%"}, {top: "-20px", opacity: "100%"}],
+      800,  
+    )
+    setTimeout(() => {
+      document.querySelector("#RascheskaGreetingsProgressBar").animate(
+        [ {width: "100%", "background-color": "rgb(255, 255, 255)"}, {width: "0%", "background-color": "rgb(172, 92, 154)"}, ], 
+        8000, 
+        "swing"
+      );
+      setTimeout(() => {
+        _.animate(
+          [{top: "-20px", width: "40%", opacity: "100%"}, {top: "-100%", width: "200%", opacity: "0%"}],
+          800, 
+          "swing"
+        );
+        setTimeout(() => {_.style.display = "none";}, 700);
+      },7800);
+    }, 800);
+  }, 2000);
+
+}
+
 function inject() {
     //подсос стилей 
     let head = document.querySelector("head");
@@ -1956,27 +2003,32 @@ function inject() {
 }
 settings.DigitGameSolver.minTimeDelay = 3000;
 settings.DigitGameSolver.randomTimeDelay = 5000;
-async function parseMyId() {
+async function parseMyId(returnName = false) {
   let myId = null;
-  let r = await fetch("https://catwar.su");
+  let r = await fetch("https://"+domain);
   let html = await r.text();
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
   myId = doc.querySelector(`#id_val`).innerHTML;
-  return myId;
+  let name = doc.querySelector("#pr big").innerHTML;
+  return returnName ? [myId, name] : myId;
 }
 async function tryParseMyID() {
-  if (settings.me.myId == null) {
+  if (settings.me.myId == null || settings.me.myName == undefined ) {
     console.log("Идентифицируем вашего кота...");
     let myId = null;
+    let name = settings.me.myName;
     try {
-      myId = await parseMyId();
+      data = await parseMyId(true);
+      myId = data[0];
+      name = data[1];
     }
     catch {
       console.error("parse err");
     }
     if (myId != null) {
       settings.me.myId = myId;
+      settings.me.myName = name;
       saveSettings();
       console.log("Ваш кот идентифицирован! Ваш ID: "+myId);
     }
@@ -1987,5 +2039,6 @@ async function tryParseMyID() {
 async function main() {
   await tryParseMyID();
   inject();
+  greetings();
 }
 main();
