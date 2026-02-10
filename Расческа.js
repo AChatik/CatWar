@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.2.0
+// @version      1.2.1
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -15,12 +15,88 @@
 // @supportURL https://catwar.net/cat1646323
 // @homepageURL https://github.com/AChatik/CatWar
 // @copyright 2025, PIPos (https://github.com/AChatik)
+// @run-at document-start
 // ==/UserScript==
 
 "не use strict"; // мне сказали это круто...
 // а нет, я почитал и чота не хочу пока. не крутой даже в своем коде
 // а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
 "не use strict"; // хотя не. оно ломает код. боже пишу как хочу. ну это же КРУТО ЭТО СВОБОДА ЭТО МОЙ ВЫБОР ПУСТЬ ДАЖЕ НЕ КРУТОЙ.
+
+function hackPointerEvent(e) {
+  return {
+    isTrusted: true,
+    altKey: e.altKey,
+    altitudeAngle: e.altitudeAngle,
+    azimuthAngle: e.azimuthAngle,  
+    bubbles: e.bubbles,
+    button: e.button,
+    buttons: e.buttons,
+    cancelBubble: e.cancelBubble,
+    cancelable: e.cancelable,
+    clientX: e.clientX,
+    clientY: e.clientY,
+    composed: e.composed,
+    ctrlKey: e.ctrlKey,
+    defaultPrevented: e.defaultPrevented,
+    detail: e.detail,
+    eventPhase: e.eventPhase,
+    fromElement: e.fromElement,
+    height: e.height,
+    isPrimary: e.isPrimary,
+    layerX: e.layerX,
+    layerY: e.layerY,
+    metaKey: e.metaKey,
+    movementX: e.movementX,
+    movementY: e.movementY,
+    offsetX: e.offsetX,
+    offsetY: e.offsetY,
+    pageX: e.pageX,
+    pageY: e.pageY,
+    persistentDeviceId: e.persistentDeviceId,
+    pointerId: e.pointerId,
+    pointerType: e.pointerType,
+    pressure: e.pressure,
+    relatedTarget: e.relatedTarget,
+    returnValue: e.returnValue,
+    screenX: e.screenX,
+    screenY: e.screenY,
+    shiftKey: e.shiftKey,
+    sourceCapabilities: e.sourceCapabilities,
+    tangentialPressure: e.tangentialPressure,
+    tiltX: e.tiltX,
+    tiltY: e.tiltY,
+    timeStamp: e.timeStamp,
+    toElement: e.toElement,
+    twist: e.twist,
+    type: e.type,
+    view: e.view,
+    which: e.which,
+    width: e.width,
+    x: e.x,
+    y: e.y,
+    target: e.target,
+    srcElement: e.srcElement,
+    currentTarget: e.currentTarget
+  }
+}
+
+Element.prototype._addEventListener = Element.prototype.addEventListener;
+Element.prototype.addEventListener = function () {
+    let args = [...arguments]
+    let temp = args[1];
+    args[1] = function () {
+      let args2 = [...arguments];
+      if (args2[0] instanceof PointerEvent) {
+        
+        args2[0] = hackPointerEvent(args2[0]);
+        
+      }
+      return temp(...args2);
+
+    }
+    return this._addEventListener(...args);
+}
 
 const domain = window.location.hostname;
 console.log("domain: "+ domain);
@@ -73,6 +149,7 @@ var settings = {
     target: null,
   },
   DigitGameSolver: {
+    enabled: true,
     minTimeDelay: 2000,
     randomTimeDelay: 4000
   },
@@ -676,6 +753,57 @@ summary {
   cursor: pointer;
 
 }
+.cheat_warn, .cheat_ban_warn {
+  text-shadow: 1px 0px 20px rgba(255, 192, 141, 0.88);
+  color: rgb(255, 167, 167);
+  opacity: 30%;
+  transition: 0.3s ease;
+}
+
+.cheat_warn:after, .cheat_ban_warn:after {
+  content: " ⚠";
+  font-size: 60%;
+}
+.cheat_ban_warn:after {
+  content: " !";
+  font-size: 60%;
+}
+
+.cheat_ban_warn:after {
+  opacity: 80% !important;
+}
+
+.cheat_warn:hover, .cheat_ban_warn:hover {
+  transition: 0.3s ease;
+  text-shadow: 1px 0px 20px rgba(255, 0, 0, 0.94);
+  color: rgb(255, 16, 16);
+  opacity: 80%;
+  scale: 1.2;
+}
+.cheat_warn:before {
+  font-size: 0pt;
+  content: " функция нарушает ОПИ";
+  transition: 0.3s ease;
+}
+.cheat_warn:hover:before {
+  transition: 0.3s ease;
+  content: " функция нарушает ОПИ";
+  font-size: 12pt;
+}
+
+
+.cheat_ban_warn:before {
+  font-size: 0pt;
+  content: " ВЫСОКИЙ РИСК НАХРЕН!";
+  transition: 0.3s ease;
+}
+.cheat_ban_warn:hover:before {
+  transition: 0.3s ease;
+  text-shadow: 1px 0px 20px rgba(238, 85, 39, 0.94);
+  color: rgb(253, 79, 79);
+  content: " ВЫСОКИЙ РИСК НАХРЕН!";
+  font-size: 12pt;
+}
 `;
 
 if (settings['DisplayDiagonals']) {
@@ -708,6 +836,7 @@ var settingsHTML = `
   </tr>
   <tr>
   <td>
+    <h1 align="center"><span>Автокликер</span><span class="cheat_warn"></span></h1>
     Не найти клитор... <input type="checkbox" ${settings['HideClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_HideClicker">
     <br>
     <span class="settingDescription">
@@ -768,6 +897,7 @@ var settingsHTML = `
   </tr>
   <tr>
     <td>
+      <h1 align="center"><span>Заметки</span></h1>  
       Скрыть пустые заметки <input type="checkbox" ${settings['HideEmptyNotes'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_HideEmptyNotes">
       <br>
       <span class="settingDescription">
@@ -777,6 +907,28 @@ var settingsHTML = `
   </tr>
   <tr>
     <td>
+      Частота обновления заметок
+      <br>
+      <span class="settingDescription">
+        <input type="number" id="RascheskaSettings_injectLinksDelay" placeholder="в секундах" value="${settings['injectLinksDelay']}">
+        <br>
+        Чем меньше задержка, тем быстрее отображаются заметки у ссылок, но может лагать хз хз.<br>
+        <span class="settingDescription">Введите отрицательное число, чтобы вообще не обновлять заметки</span>
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      Мои заметки
+      <span class="settingDescription">
+        <div id="RascheskaSettings_NotesList">
+        </div>
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h1 align="center"><span>Диагонали</span><span class="cheat_warn"></span></h1>
       Отображать диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_DisplayDiagonals">
       <br>
       <span class="settingDescription">
@@ -811,27 +963,16 @@ var settingsHTML = `
   </tr>
   <tr>
     <td>
-      Частота обновления заметок
-      <br>
+      <h1 align="center"><span>Выкачка кролей</span><span class="cheat_warn"></span><span class="cheat_ban_warn"></span></h1>
+      Включить автоматическое решение игры в угадывание чисел <input type="checkbox" ${settings.DigitGameSolver.enabled ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_DigitGameSolver_Enabled">
       <span class="settingDescription">
-        <input type="number" id="RascheskaSettings_injectLinksDelay" placeholder="в секундах" value="${settings['injectLinksDelay']}">
-        <br>
-        Чем меньше задержка, тем быстрее отображаются заметки у ссылок, но может лагать хз хз.<br>
-        <span class="settingDescription">Введите отрицательное число, чтобы вообще не обновлять заметки</span>
-      </span>
-    </td>
-  </tr>
-  <tr>
-    <td>
-      Мои заметки
-      <span class="settingDescription">
-        <div id="RascheskaSettings_NotesList">
-        </div>
+        В чате с Системолапом будет отображаться кнопка, благодаря которой вы можете выкачивать кроли афк 
       </span>
     </td>
   </tr>
   <tr>
   <td>
+    <h1 align="center"><span>Прочее</span></h1>
     Импорт/экспорт настроек и заметок
     <br>
     <span class="settingDescription" style="padding: 20px">
@@ -972,11 +1113,16 @@ function updateClickerTitle(delay) {
   }
 }
 
+//document.querySelector(".cage").dispatchEvent(new PointerEvent("click",{"isTrusted": true, bubbles:true, pointerId: 1, height:1, width:1, target: document.querySelector("td.cage div.cage_items"), currentTarget: document.querySelector(".cage"), type: "click", view: window, pointerType: "mouse",clientX: 335, clientY: 127, srcElement: document.querySelector(".cage .cage_items"), x:335, y: 127, screenX: 400, screenY: 916, pageX:394, pageY:935, offsetX:40, offsetY:68,timeStamp: Math.round(Date.now()/1000)}))
+
 function updateClickerDelay() {
   let delay = Math.random() * settings['ClickerRandomDelay'] + settings['ClickerActualDelay'];
   updateClickerTitle(Math.round(delay));
   setTimeout(ClickerClick, delay*1000);
 }
+
+
+
 
 function ClickerClick() {
   if (settings['ClickerMaxMoves'] > 0) {
@@ -989,12 +1135,15 @@ function ClickerClick() {
   }
   if (settings['EnableClicker']) {
     updateClickerDelay();
-    console.log("Клитор перешел.");
+    
     let cage = getCage(settings['ClickerTargetCellNumX'], settings['ClickerTargetCellNumY']);
     try {
-      cage.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      var rect = cage.getBoundingClientRect()
+      cage.dispatchEvent(new PointerEvent("click", {clientX: rect.left + Math.round(Math.random() * rect.width), clientY: rect.top + Math.round(Math.random() * rect.height), bubbles: true}));
+      //cage.click();
       clickerMovesCount += 1;
       document.querySelector("#clickerMovesCount").innerHTML = ""+clickerMovesCount;
+      console.log("Клитор перешел.", cage);
     }
     catch (error) {
       console.error(`Не удалось перейти. \nCage: ${cage}\nError: ${error}`)
@@ -1011,7 +1160,7 @@ function switchClicker() {
   if (!isClickerTargetSelected) {
     return;
   }
-  if (settings['EnableClicker']  || clickerMovesCount) {
+  if (settings['EnableClicker']) {
     settings['EnableClicker'] = false;
     console.log("Клитор остановлен");
     EnableClickerBtn.innerHTML = "Поехали!";
@@ -1095,7 +1244,7 @@ function injectSettings() {
   let ClickerFontColorInput = document.querySelector("#RascheskaSettings_ClickerFontColor");
   let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
-  TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
+  let RascheskaSettings_DigitGameSolver_Enabled = document.querySelector("#RascheskaSettings_DigitGameSolver_Enabled");
   
   let AddDiagBtn = document.querySelector("#RascheskaSettings_AddDiagBtn");
   let PreviewDiagsBtn = document.querySelector("#RascheskaSettings_PreviewDiags");
@@ -1148,6 +1297,10 @@ function injectSettings() {
   });
   TransparentClickerCheckBox.addEventListener("change", () => {
     settings['TransparentClicker'] = TransparentClickerCheckBox.checked;
+    saveSettings();
+  });
+  RascheskaSettings_DigitGameSolver_Enabled.addEventListener("change", () => {
+    settings.DigitGameSolver.enabled = RascheskaSettings_DigitGameSolver_Enabled.checked;
     saveSettings();
   });
   
@@ -1348,7 +1501,7 @@ function injectNotesForLinks() {
 
       if (notes == undefined && settings['HideEmptyNotes']) return;
 
-      console.log(`Вставлена заметка для кота https://${domain}/cat${catID}`);
+      //console.log(`Вставлена заметка для кота https://${domain}/cat${catID}`);
       //link.title = notes == undefined ? "Заметок пока нет..." : notes;
       link.addEventListener('mouseenter', () => {
         link.appendChild(noteDiv);
@@ -1405,7 +1558,7 @@ function injectMessageSaver() {
   if (window.location.href.startsWith(`https://${domain}/ls?id=`)) {
     let msg = document.querySelector("#msg_table");
     if (msg == null) {
-      setTimeout(injectMessageSaver, 0.2);
+      setTimeout(injectMessageSaver, 200);
       return;
     }
     let sender_href = msg.querySelector("#msg_login").href;
@@ -1731,7 +1884,7 @@ AimUpdate.injectedCats = [];
 
 async function aimUpdater() {
   AimUpdate();
-  setTimeout(aimUpdater, 0.2);
+  setTimeout(aimUpdater, 100);
 }
 
 function injectAim() {
@@ -1741,7 +1894,7 @@ function injectAim() {
 }
 
 class OptimalGuesser {
-    constructor(min = -100000000000000, max = 100000000000000) {
+    constructor(min = -100000000000, max = 100000000000) {
         this.min = min;
         this.max = max;
         this.history = [];
@@ -1791,12 +1944,6 @@ function DigitGameSolver() {
   mess_form.setAttribute("contenteditable", false);
 
   let stats = DigitGameSolver.OptimalGuesser.getStats();
-  let precent = Math.round(stats.attempts / stats.worstCaseLeft * 100);
-  if (precent != NaN) {
-
-    DigitGameSolver.startBtn.innerHTML = "казино выкачено на " + precent + `%<br>ОСТАНОВИТЬ ВЫКАЧИВАНИЕ КАЗИКА НАХРЕН!!!!🛑🛑🛑<br><hr style="max-width: 100%; left: 0px; border-style: solid ; transition: width 0.2s ease; background-color: white; height:5px; margin: 5px; border-radius: 3px; opacity:70%;"></hr>`;
-    DigitGameSolver.startBtn.querySelector("hr").setAttribute("width", `${100-Math.round((Date.now() - DigitGameSolver.lastMessageTime) / DigitGameSolver.currentDelay * 100)}%`);
-  }
 
   if (DigitGameSolver.lastResponse == null) {
     DigitGameSolver.lastResponse = DigitGameSolver.getLastResponse(chat_table);
@@ -1806,6 +1953,13 @@ function DigitGameSolver() {
     console.log("Угадываем число...");
     let delay = Math.random() * settings.DigitGameSolver.randomTimeDelay + settings.DigitGameSolver.randomTimeDelay;
     console.log("Ждем "+delay/1000+" секунд");
+    let precent = Math.round(stats.attempts / stats.worstCaseLeft * 100);
+    if (precent != NaN) {
+      let timeLeft = Math.round((settings.DigitGameSolver.minTimeDelay + settings.DigitGameSolver.randomTimeDelay+settings.DigitGameSolver.minTimeDelay)*(stats.worstCaseLeft-stats.attempts)/2000);
+      DigitGameSolver.startBtn.innerHTML = "казино выкачено на " + precent + `% <span style="opacity: 80%; font-size: 12pt">(еще выкачивать ~${timeLeft > 60 ? Math.round(timeLeft/60) : timeLeft} ${timeLeft > 60 ? "м":"с"}.)</span><br>НАЖМИТЕ, ЧТОБЫ ОСТАНОВИТЬ ВЫКАЧИВАНИЕ КАЗИКА НАХРЕН!!!!<br><hr style="max-width: 100%; left: 0px; border-style: solid; background-color: white; height:5px; margin: 5px; border-radius: 3px; opacity:70%;"></hr><span style="opacity: 80%; font-size: 10pt; padding: -10px; ">Задержка в ${Math.round(delay/1000)} секунд</span>`;
+      //DigitGameSolver.startBtn.querySelector("hr").setAttribute("width", `${100-Math.round((Date.now() - DigitGameSolver.lastMessageTime) / DigitGameSolver.currentDelay * 100)}%`);
+    }    
+    DigitGameSolver.startBtn.querySelector("hr").animate([{width: "100%"}, {width: "0%"}], Math.round(delay));
     if (DigitGameSolver.lastResponse != null) {
       
       let respText = DigitGameSolver.lastResponse.querySelector(".parsed").innerHTML;
@@ -1813,7 +1967,7 @@ function DigitGameSolver() {
       if (type.includes("Молодец,") && DigitGameSolver.OptimalGuesser.history.length > 0) {
         console.log("Ура! Мы угадали число!");
         DigitGameSolver.OptimalGuesser = new OptimalGuesser();
-        injectDigitGameSolver.resetStartBtn(startBtn);
+        injectDigitGameSolver.resetStartBtn(DigitGameSolver.startBtn);
         return;
       }
       DigitGameSolver.OptimalGuesser.update(type);
@@ -1876,6 +2030,7 @@ DigitGameSolver.getLastResponse = function(chat_table) {
 }
 
 function injectDigitGameSolver() {
+  if (!settings.DigitGameSolver.enabled) return;
   if (!window.location.href.startsWith(`https://${domain}/chat`)) return;
 
   let startCheckLoadTime = Date.now();
@@ -2041,4 +2196,5 @@ async function main() {
   inject();
   greetings();
 }
-main();
+window.onload = main;
+//main();
