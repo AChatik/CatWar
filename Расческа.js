@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.2.1
+// @version      1.2.2
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -77,7 +77,14 @@ function hackPointerEvent(e) {
     y: e.y,
     target: e.target,
     srcElement: e.srcElement,
-    currentTarget: e.currentTarget
+    currentTarget: e.currentTarget,
+    preventDefault: (...args) => {return e.preventDefault(...args)},
+    stopPropagation: (...args) => {return e.stopPropagation(...args)},
+    stopImmediatePropagation: (...args) => {return e.stopImmediatePropagation(...args)},
+    getPredictedEvents: (...args) => {return e.getPredictedEvents(...args)},
+    getModifierState: (...args) => {return e.getModifierState(...args)},
+    getCoalescedEvents: (...args) => {return e.getCoalescedEvents(...args)},
+    composedPath: (...args) => {return e.composedPath(...args)},
   }
 }
 
@@ -88,7 +95,7 @@ Element.prototype.addEventListener = function () {
     args[1] = function () {
       let args2 = [...arguments];
       if (args2[0] instanceof PointerEvent) {
-        
+             
         args2[0] = hackPointerEvent(args2[0]);
         
       }
@@ -156,6 +163,7 @@ var settings = {
   HideSecretNotesIDs: ["1646323", "1630560", "1615741", "1629151"],
   SavedCatsNames: {
   },
+  EnableAdBlock: false,
 };
 
 var default_settings = { ...settings, ...{}};
@@ -376,6 +384,9 @@ button {
   padding: 4px;
   border-radius: 5px;
   width:100%;
+}
+.settingDescription a {
+  color: rgb(209, 168, 168);
 }
 .settingDescription .settingDescription {
   background-color:rgb(56, 56, 56);
@@ -966,7 +977,20 @@ var settingsHTML = `
       <h1 align="center"><span>Выкачка кролей</span><span class="cheat_warn"></span><span class="cheat_ban_warn"></span></h1>
       Включить автоматическое решение игры в угадывание чисел <input type="checkbox" ${settings.DigitGameSolver.enabled ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_DigitGameSolver_Enabled">
       <span class="settingDescription">
-        В чате с Системолапом будет отображаться кнопка, благодаря которой вы можете выкачивать кроли афк 
+        В чате с <a href="https://${domain}/cat44">Системолапом</a> будет отображаться кнопка, благодаря которой вы можете выкачивать кроли афк 
+        <h4>Как это работает?</h4>
+        Расческа автоматически отправляет команду /number Системолапу со случайной задержкой.<br>
+        Пока фармятся кроли, вы можете заниматься своими делами. Держать вкладку открытой не обязательно.
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <h1 align="center"><span>Аим бот</span><span class="cheat_warn"></span><span class="cheat_ban_warn"></span></h1>
+      Включить аим <input type="checkbox" ${settings.Aim.enabled ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_Aim_Enabled">
+      <span class="settingDescription">
+        Позволяет автоматически наводить стрелку на выбранную цель в активном бою <br>
+        (на самом деле полезного в этом мало...)
       </span>
     </td>
   </tr>
@@ -1245,6 +1269,7 @@ function injectSettings() {
   let DisplayDiagonalsCheckBox = document.querySelector("#RascheskaSettings_DisplayDiagonals");
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
   let RascheskaSettings_DigitGameSolver_Enabled = document.querySelector("#RascheskaSettings_DigitGameSolver_Enabled");
+  let RascheskaSettings_Aim_Enabled = document.querySelector("#RascheskaSettings_Aim_Enabled");
   
   let AddDiagBtn = document.querySelector("#RascheskaSettings_AddDiagBtn");
   let PreviewDiagsBtn = document.querySelector("#RascheskaSettings_PreviewDiags");
@@ -1301,6 +1326,10 @@ function injectSettings() {
   });
   RascheskaSettings_DigitGameSolver_Enabled.addEventListener("change", () => {
     settings.DigitGameSolver.enabled = RascheskaSettings_DigitGameSolver_Enabled.checked;
+    saveSettings();
+  });
+  RascheskaSettings_Aim_Enabled.addEventListener("change", () => {
+    settings.Aim.enabled = RascheskaSettings_Aim_Enabled.checked;
     saveSettings();
   });
   
@@ -1597,7 +1626,7 @@ function injectMessageSaver() {
     }
     
   }
-  else if (window.location.href.startsWith(`https://${domain}t/ls`)) {
+  else if (window.location.href.startsWith(`https://${domain}/ls`)) {
     let div = document.createElement("div");
     div.open = true;
     div.id = "savedMessages";
