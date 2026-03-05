@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.2.2
+// @version      1.2.3
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -23,6 +23,14 @@
 // а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
 "не use strict"; // хотя не. оно ломает код. боже пишу как хочу. ну это же КРУТО ЭТО СВОБОДА ЭТО МОЙ ВЫБОР ПУСТЬ ДАЖЕ НЕ КРУТОЙ.
 
+// ==================                    ==================
+// ================== ВЗЛОМ САЙТА ЧУЧУТЬ ==================
+// ==================                    ==================
+
+// ================== ОБХОДИМ ЗАЩИТУ БРАУЗЕРА НАХРЕН!!! ==================
+function Random(min, max) {
+  return Math.round(Math.random() * (max - min) + min);
+}
 function hackPointerEvent(e) {
   return {
     isTrusted: true,
@@ -104,6 +112,53 @@ Element.prototype.addEventListener = function () {
     }
     return this._addEventListener(...args);
 }
+
+
+// ================== СКАНИРУЕМ ВСЕ СЕТЕВЫЕ ПОДКЛЮЧЕНИЯ НАФИГ (СОКЕТЫ) ==================
+// это очень круто можно просматривать сообщения сервера и ваще нафиг
+var SOCKETS = []
+
+function newWebSocketOpen(socket, e = null) {
+    if (SOCKETS.includes(socket)) return;
+      SOCKETS.push(socket);
+    console.log("Открыт WebSocket!"+ (socket.url.startsWith(`wss://${domain}/ws/cw3/socket.io`) ? " (основной сокет кэтвара)" : ""+": "),socket);
+}
+ 
+function getSocket(url) {
+  let r= null;
+  SOCKETS.forEach(i => {
+    if (i.url.startsWith(url)) r = i;
+  })
+  return r;
+}
+
+hackWebSocket.hacked = false;
+function hackWebSocket() {
+  if (hackWebSocket.hacked) return;
+  let originalWebSocket = window.WebSocket;
+  window.WebSocket = function(...args) {
+    let socket = new originalWebSocket(...args);
+    newWebSocketOpen(socket);
+
+    return socket;
+  }
+  window.WebSocket.prototype = originalWebSocket.prototype;
+  window.WebSocket.CONNECTING = originalWebSocket.CONNECTING;
+  window.WebSocket.OPEN = originalWebSocket.OPEN;
+  window.WebSocket.CLOSING = originalWebSocket.CLOSING;
+  window.WebSocket.CLOSED = originalWebSocket.CLOSED;
+  WebSocket = window.WebSocket;
+
+  const originalSend = WebSocket.prototype.send;
+  WebSocket.prototype.send = function(data) {
+      newWebSocketOpen(this);
+      return originalSend.call(this, data);
+  };
+  
+hackWebSocket.hacked = true;
+}
+
+hackWebSocket();
 
 const domain = window.location.hostname;
 console.log("domain: "+ domain);
@@ -2155,6 +2210,52 @@ function greetings() {
   }, 2000);
 
 }
+async function socketFinder(handler) {
+    let socket = getSocket(`wss://${domain}/ws/site/socket.io/?EIO=3&transport=websocket`);
+    if (socket != null) {
+      handler(socket)
+    }
+    else {
+      setTimeout(() => {socketFinder(handler)}, 500); 
+    }
+    
+  }
+
+function injectHuntCheat() {
+  if (!window.location.href.startsWith("https://"+domain+"/cw3/jagd")) return;
+  //hackWebSocket();
+  console.log("Это страница охоты!");
+
+  document.querySelectorAll("#buttons button").forEach(btn => {
+    let diff = btn.id[1];
+    btn.addEventListener("click", e => {injectHuntCheat.currentDifficulty = diff; console.log("Difficulty: " + diff)});
+  })
+
+  console.log("Ищем сокет...");
+  socketFinder(socket => {
+    injectHuntCheat.socket = socket;
+    console.log("Сокет найден, можно ловить дичь!");
+    document.querySelector("html").insertAdjacentHTML("beforeend", `<button id="endHuntInstantly" class="RascheskaSettings_Btn" style="z-index: 14888888 !important; pointer-events: auto !important; position: absolute; left: 70px; top:10px;">Поймать дичь автоматически</button>`)
+    let btn = document.querySelector("#endHuntInstantly")
+  
+    btn.addEventListener("click", (e) => {
+      let timeMinutes = Random(0, 3);
+      let timeSeconds = Random(timeMinutes > 0 ? 0 : 40, 59);
+      let wild_x = Random(6000, 15000);
+      let wild_y = Random(6000, 15000);
+      let min = Random(16000, 18000);
+      let way = Random(4000, 6000)/10;
+      let hunt_type = document.querySelector("#main").getAttribute("data-type");
+      let difficulty = injectHuntCheat.currentDifficulty;
+      let id = Random(36000000, 38000000);
+      socket.send(`42["hunt end",{"time":"${timeMinutes} мин ${timeSeconds} сек","wild_x":${wild_x},"wild_y":${wild_y},"min":${min},"way":${way},"hunt_type":${hunt_type},"difficulty":${difficulty},"id":${id}}]`)
+    })
+
+  });
+
+
+  
+}
 
 function inject() {
     //подсос стилей 
@@ -2166,7 +2267,7 @@ function inject() {
     if (window.location.href.startsWith(`https://${domain}/settings`)) {
       injectSettings();
     }
-    if (window.location.href.startsWith(`https://${domain}/cw3/`)) {
+    if (window.location.href.startsWith(`https://${domain}/cw3/`) && window.location.href != `https://${domain}/cw3/jagd`) {
       console.log("Это игровая");
       if (!settings['HideClicker']) {
         injectClicker();
@@ -2184,6 +2285,7 @@ function inject() {
     injectMessageSaver();
     injectNotesForLinks();
     injectDigitGameSolver();
+    injectHuntCheat();
 }
 settings.DigitGameSolver.minTimeDelay = 3000;
 settings.DigitGameSolver.randomTimeDelay = 5000;
