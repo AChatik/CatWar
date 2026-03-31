@@ -18,7 +18,7 @@
 // @run-at document-start
 // ==/UserScript==
 const version = "1.2.4"
-const updateInfo = `<br>Исправление багов, починил заметки, расширение настроек`;
+const updateInfo = `<br>Исправление багов, починил заметки, расширение настроек. Добавлено это сообщение.`;
 "не use strict"; // мне сказали это круто...
 // а нет, я почитал и чота не хочу пока. не крутой даже в своем коде
 // а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
@@ -2375,8 +2375,11 @@ function showUpdateInfo() {
 async function main() {
   await tryParseMyID();
   inject();
-  greetings();
-  if (settings.version === undefined || settings.version != version) {
+  if (settings.isFirstRun) {
+    greetings();  
+  }
+  
+  else if (settings.version === undefined || settings.version != version) {
     showUpdateInfo();
     settings.version = version
     saveSettings();
