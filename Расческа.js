@@ -174,7 +174,6 @@ var settings = {
     myId: null,
     myName: "Котик"
   },
-  version: version,
   isFirstRun: true,
   SmoothEverything: true,
   SmoothTime: 0.2,
@@ -2366,7 +2365,7 @@ function showUpdateInfo() {
     `
     <div style="font-size: 14pt">
       <h1 align="center"><span>Расческа</span> обновлена!</h1>
-      <span align="center" >Новая версия: <font style="opacity: 30%">v. ${settings.version}</font> -> v. ${version}</span>
+      <span align="center" >Новая версия: <font style="opacity: 30%">${settings.version === undefined ? "" : ("v. " + settings.version + " ->")}</font> v. ${version}</span>
       <span style="opacity:70%;">${updateInfo}</span>
     </div>
     `
@@ -2377,7 +2376,7 @@ async function main() {
   await tryParseMyID();
   inject();
   greetings();
-  if (settings.version != version) {
+  if (settings.version === undefined || settings.version != version) {
     showUpdateInfo();
     settings.version = version
     saveSettings();
