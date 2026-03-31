@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.2.3
+// @version      1.2.4
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -17,20 +17,19 @@
 // @copyright 2025, PIPos (https://github.com/AChatik)
 // @run-at document-start
 // ==/UserScript==
-
+const version = "1.2.4"
+const updateInfo = `<br>Исправление багов, починил заметки, расширение настроек`;
 "не use strict"; // мне сказали это круто...
 // а нет, я почитал и чота не хочу пока. не крутой даже в своем коде
 // а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
 "не use strict"; // хотя не. оно ломает код. боже пишу как хочу. ну это же КРУТО ЭТО СВОБОДА ЭТО МОЙ ВЫБОР ПУСТЬ ДАЖЕ НЕ КРУТОЙ.
-
-// ==================                    ==================
-// ================== ВЗЛОМ САЙТА ЧУЧУТЬ ==================
-// ==================                    ==================
-
-// ================== ОБХОДИМ ЗАЩИТУ БРАУЗЕРА НАХРЕН!!! ==================
 function Random(min, max) {
   return Math.round(Math.random() * (max - min) + min);
 }
+// ==================                    ==================
+// ================== ВЗЛОМ САЙТА ЧУЧУТЬ ==================
+// ==================                    ==================
+// ================== ОБХОДИМ ЗАЩИТУ БРАУЗЕРА НАХРЕН!!! ==================
 function hackPointerEvent(e) {
   return {
     isTrusted: true,
@@ -96,22 +95,28 @@ function hackPointerEvent(e) {
   }
 }
 
-Element.prototype._addEventListener = Element.prototype.addEventListener;
-Element.prototype.addEventListener = function () {
-    let args = [...arguments]
-    let temp = args[1];
-    args[1] = function () {
-      let args2 = [...arguments];
-      if (args2[0] instanceof PointerEvent) {
-             
-        args2[0] = hackPointerEvent(args2[0]);
-        
-      }
-      return temp(...args2);
+function injectPointerHacker() {
+  Element.prototype._addEventListener = Element.prototype.addEventListener;
+  Element.prototype.addEventListener = function () {
+      let args = [...arguments]
+      let temp = args[1];
+      if ("click pointclick mousedown mouseup".includes(args[0])) {
+        args[1] = function () {
+          let args2 = [...arguments];
+          if (args2[0] instanceof PointerEvent) {
+                
+            args2[0] = hackPointerEvent(args2[0]);
+            
+          }
+          return temp(...args2);
 
-    }
-    return this._addEventListener(...args);
+        }
+      }
+
+      return this._addEventListener(...args);
+  }
 }
+
 
 
 // ================== СКАНИРУЕМ ВСЕ СЕТЕВЫЕ ПОДКЛЮЧЕНИЯ НАФИГ (СОКЕТЫ) ==================
@@ -169,6 +174,7 @@ var settings = {
     myId: null,
     myName: "Котик"
   },
+  version: version,
   isFirstRun: true,
   SmoothEverything: true,
   SmoothTime: 0.2,
@@ -188,6 +194,7 @@ var settings = {
   DisplayDiagonals: false,
   DiagonalsOpacity: 1,
   DiagonalsImages: DiagonalsImagesDefault,
+  injectPointerHacker: true,
   MyCatsNotes: {
     "1646323": "я написал это дерьмо.",
     "1630560": "Знаком ли ты с одним из своих рёбер?",
@@ -264,6 +271,9 @@ loadSettings();
 
 if (settings['DiagonalsImages']=="") {
   settings['DiagonalsImages'] = DiagonalsImagesDefault;
+}
+if (settings.injectPointerHacker) {
+  injectPointerHacker();
 }
 
 var clickerMovesCount = 0;
@@ -493,8 +503,8 @@ a:hover #catNotesForLink {
 #catNotes {
   
   position: absolute;
-  right:200px;
-  top:20px;
+  right:90px;
+  top:70px;
 }
 
 @media screen and (orientation: portrait) {
@@ -963,6 +973,19 @@ var settingsHTML = `
   </tr>
   <tr>
     <td>
+      <font style="color: #ffaaff">Взлом нажатия мыши</font> <input type="checkbox" ${ settings['injectPointerHacker'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_injectPointerHacker">
+      <br>
+      <span class="settingDescription">
+        <b>Выключите</b> этот параметр, если у вас что-то не работает с кнопками. Учтите, что автокликер скорее всего работать не будет.
+        <br><br>
+        Расческа будет имитировать нажатия на левую кнопку мыши во время работы автокликера (собственно в этом его суть). Однако, для обхода защиты, требуется заменять оригинальное событие нажатияч мыши на подделку.
+        <br>
+        Из-за этого могут возникать непредвиденные ошибки, при работе с другими модами, например, жмешь на кнопку, но ниего не происходит...
+      </span>
+    </td>
+  </tr>
+  <tr>
+    <td>
       <h1 align="center"><span>Заметки</span></h1>  
       Скрыть пустые заметки <input type="checkbox" ${settings['HideEmptyNotes'] ? 'checked' : ''} class="RascheskaCheckbox" id="RascheskaSettings_HideEmptyNotes">
       <br>
@@ -1054,7 +1077,7 @@ var settingsHTML = `
     <h1 align="center"><span>Прочее</span></h1>
     Импорт/экспорт настроек и заметок
     <br>
-    <span class="settingDescription" style="padding: 20px">
+    <span class="settingDescription">
       <textarea id="RascheskaSettings_importSettingsTextArea" style="font-size: 12pt;" class="RascheskaSettings_Textarea" placeholder="Вставьте настройки сюда."></textarea>
       <br>
       <button id="RascheskaSettings_importSettingsSubmitBtn" class="RascheskaSettings_Btn">Импортировать</button>
@@ -1325,6 +1348,7 @@ function injectSettings() {
   let TransparentClickerCheckBox = document.querySelector("#RascheskaSettings_TransparentClicker");
   let RascheskaSettings_DigitGameSolver_Enabled = document.querySelector("#RascheskaSettings_DigitGameSolver_Enabled");
   let RascheskaSettings_Aim_Enabled = document.querySelector("#RascheskaSettings_Aim_Enabled");
+  let RascheskaSettings_injectPointerHacker = document.querySelector("#RascheskaSettings_injectPointerHacker");
   
   let AddDiagBtn = document.querySelector("#RascheskaSettings_AddDiagBtn");
   let PreviewDiagsBtn = document.querySelector("#RascheskaSettings_PreviewDiags");
@@ -1385,6 +1409,10 @@ function injectSettings() {
   });
   RascheskaSettings_Aim_Enabled.addEventListener("change", () => {
     settings.Aim.enabled = RascheskaSettings_Aim_Enabled.checked;
+    saveSettings();
+  });
+  RascheskaSettings_injectPointerHacker.addEventListener("change", () => {
+    settings.injectPointerHacker = RascheskaSettings_injectPointerHacker.checked;
     saveSettings();
   });
   
@@ -1534,8 +1562,8 @@ function GetLastDiagId(){
 function injectNotes() {
   let place = document.querySelector("#branch");
   place.style.position = "relative";
-  let catID = document.querySelector("#id_val").value;
-  settings['SavedCatsNames'][catID] = place.querySelector("div.summary-profile > div > span > big").innerHTML;
+  let catID = document.querySelector("#id_val").innerHTML;
+  settings['SavedCatsNames'][catID] = place.querySelector(".profile-text big").innerHTML;
   saveSettings();
   console.log(`Имя сохранено (${settings['SavedCatsNames'][catID]})`);
   console.log(`Текущий ID кота: ${catID}`);
@@ -2167,22 +2195,15 @@ injectDigitGameSolver.resetStartBtn = function(startBtn) {
     DigitGameSolver.isRunning = false;
 }
 
-function greetings() {
-  if (settings.isFirstRun == false) return;
-  tryParseMyID();
-  settings.isFirstRun =false;
-  let html = `
+function showMessage(html) {
+  try {
+    document.querySelector("div.hide_up#RascheskaSettings").remove();
+  } catch {}
+  html = `
   <div style="left: 50%; width:40%; border-width: 0px; position: fixed; transform: translate(-50%, 0); top: -20px;" class="Rascheska_Block hide_up" id="RascheskaSettings">
-    <div style="position: relative;">
-    <p align="center" style="font-size: 14pt; color: #DDD">Привет, ${settings.me.myName}!</p>
-    <h1 align="center" style="font-size: 24pt;"><span>Расческа</span> установлена!</h1>
-    <p align="center" style="font-size: 14pt; color: #DDD"><span style="color: #FFAAAA;">Внимание!</span> Некоторые функции могут нарушать ОПИ!<br>
-    Перейдите в <a style="color: rgb(235, 188, 225);" href="https://${domain}/settings">Настройки</a> для изменения параметров мода.</p>
+    ${html}
     <hr align="center" id="RascheskaGreetingsProgressBar"  style="position: absolute; bottom: -40px; opacity: 80%; border-width: 0px;background-color: white; border-style: solid; border-radius: 4px; height: 6px; width: 100%;"></hr>
-    </div>
   </div>`;
-  
-  saveSettings();
   document.querySelector("html").insertAdjacentHTML("beforeend", html)
   let _ = document.querySelector("div.hide_up#RascheskaSettings");
   _.style.top = "-100%";
@@ -2204,12 +2225,30 @@ function greetings() {
           800, 
           "swing"
         );
-        setTimeout(() => {_.style.display = "none";}, 700);
+        setTimeout(() => {_.style.display = "none"; _.remove(); }, 700);
       },7800);
     }, 800);
   }, 2000);
-
 }
+
+function greetings() {
+  if (settings.isFirstRun == false) return;
+  tryParseMyID();
+  settings.isFirstRun =false;
+  let html = `
+  <div style="position: relative;">
+    <p align="center" style="font-size: 14pt; color: #DDD">Привет, ${settings.me.myName}!</p>
+    <h1 align="center" style="font-size: 24pt;"><span>Расческа</span> установлена!</h1>
+    <p align="center" style="font-size: 14pt; color: #DDD"><span style="color: #FFAAAA;">Внимание!</span> Некоторые функции могут нарушать ОПИ!<br>
+    Перейдите в <a style="color: rgb(235, 188, 225);" href="https://${domain}/settings">Настройки</a> для изменения параметров мода.</p>
+    
+  </div>`
+  showMessage(html);
+  saveSettings();
+}
+
+
+
 async function socketFinder(handler) {
     let socket = getSocket(`wss://${domain}/ws/site/socket.io/?EIO=3&transport=websocket`);
     if (socket != null) {
@@ -2322,10 +2361,27 @@ async function tryParseMyID() {
   }
 }
 
+function showUpdateInfo() {
+  showMessage(
+    `
+    <div style="font-size: 14pt">
+      <h1 align="center"><span>Расческа</span> обновлена!</h1>
+      <span align="center" >Новая версия: <font style="opacity: 30%">v. ${settings.version}</font> -> v. ${version}</span>
+      <span style="opacity:70%;">${updateInfo}</span>
+    </div>
+    `
+  )
+}
+
 async function main() {
   await tryParseMyID();
   inject();
   greetings();
+  if (settings.version != version) {
+    showUpdateInfo();
+    settings.version = version
+    saveSettings();
+  }
 }
 window.onload = main;
 //main();
