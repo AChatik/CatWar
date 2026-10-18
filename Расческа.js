@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Расческа
 // @namespace    http://tampermonkey.net/
-// @version      1.2.4
+// @version      1.2.5
 // @description  Делает взаимодействие с сайтом приятнее
 // @author       PIPos
 // @updateURL    https://raw.githubusercontent.com/AChatik/CatWar/refs/heads/main/Расческа.js
@@ -17,8 +17,8 @@
 // @copyright 2025, PIPos (https://github.com/AChatik)
 // @run-at document-start
 // ==/UserScript==
-const version = "1.2.4"
-const updateInfo = `<br>Исправление багов, починил заметки, расширение настроек. Добавлено это сообщение.`;
+const version = "1.2.5"
+const updateInfo = `<br>Фикс под новую версию сайта (1/2)</br>`;
 "не use strict"; // мне сказали это круто...
 // а нет, я почитал и чота не хочу пока. не крутой даже в своем коде
 // а хотя... похуй гойда че я слабачек чтоли Я КРУТОЙ.
@@ -303,10 +303,10 @@ div.skill:hover, div.parameter:hover, .move_name:hover {
 }
 
 .move_name:hover {
-  opacity: 130%;
-  -webkit-box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15);
-  -moz-box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15);
-  box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15);
+  opacity: 130% !important;
+  -webkit-box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15) !important;
+  -moz-box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0px 0px 10px 4px rgba(255, 255, 255, 0.15) !important;
 }
 
 ${settings['SmoothEverything'] ? '* {transition: '+settings["SmoothTime"]+'s ease;}' : ''}
@@ -321,7 +321,7 @@ a:hover {
 }
 
 .move_name {
-  cursor: pointer;
+  cursor: pointer !important;
 }
 
 button {
@@ -402,7 +402,7 @@ button {
   padding: 0;
   border: 2px solid #EBBCE1;
   border-radius: 7px;
-  background-color: rgba(202, 49, 233, 0.05);
+  background-color: rgba(202, 49, 233, 0.15) !important;
   outline: none;
   cursor: pointer;
   transition: ${settings['SmoothTime']}s ease, background-color ${settings['SmoothTime']}s ease, border-color ${settings['SmoothTime']}s ease;
@@ -1111,7 +1111,7 @@ var settingsHTML = `
 
 
 var clickerHTML = `
-<div id="clicker">
+<div id="clicker" style="z-index:9999;">
   <div>
     Скрытый <input type="checkbox" ${settings['TransparentClicker'] ? 'checked' : ''} class="RascheskaCheckbox" id="Clicker_TransparentClicker">
     Диагонали <input type="checkbox" ${settings['DisplayDiagonals'] ? 'checked' : ''} ${settings['DiagonalsCompositedIds'].length == 0 ? 'disabled' : ''} class="RascheskaCheckbox" id="Clicker_DisplayDiagonals">
@@ -1298,8 +1298,9 @@ function injectClicker() {
   let clickerPlace = document.querySelector("html");
   let div = document.createElement("div");
   div.id = "ClickerBody";
+  div.style.zIndex = 9999;
   div.innerHTML = `${clickerHTML}<div id="ClickerBodyOpen" align="center"><b>Клитор</b></div>`;
-  clickerPlace.appendChild(div);
+  clickerPlace.insertAdjacentElement("beforeend",div);
   document.querySelector("#EnableClickerBtn").addEventListener("click", switchClicker);
   document.querySelector("#ClickerMaxMoves").addEventListener("change", clickerMovesLimit_change);
   document.querySelector("#ClickerActualDelay").addEventListener("change", clickerMovesLimit_change);
@@ -2287,6 +2288,8 @@ function injectHuntCheat() {
       let difficulty = injectHuntCheat.currentDifficulty;
       let id = Random(36000000, 38000000);
       socket.send(`42["hunt end",{"time":"${timeMinutes} мин ${timeSeconds} сек","wild_x":${wild_x},"wild_y":${wild_y},"min":${min},"way":${way},"hunt_type":${hunt_type},"difficulty":${difficulty},"id":${id}}]`)
+
+    
     })
 
   });
@@ -2385,5 +2388,5 @@ async function main() {
     saveSettings();
   }
 }
-window.onload = main;
+main();
 //main();
